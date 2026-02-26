@@ -9,109 +9,225 @@ export interface ScrapedResult {
   raceLocation: string;
   totalTime: number;
   splits: {
-    run1: number;
-    run2: number;
-    run3: number;
-    run4: number;
-    run5: number;
-    run6: number;
-    run7: number;
-    run8: number;
-    skiErg: number;
-    sledPush: number;
-    burpeeBroadJump: number;
-    rowing: number;
-    farmersCarry: number;
-    sandbagLunges: number;
-    wallBalls: number;
+    run1: number; run2: number; run3: number; run4: number;
+    run5: number; run6: number; run7: number; run8: number;
+    skiErg: number; sledPush: number; burpeeBroadJump: number; rowing: number;
+    farmersCarry: number; sandbagLunges: number; wallBalls: number;
   };
 }
 
-/**
- * 从hyresult.com抓取选手成绩
- */
-export async function scrapeHyresult(athleteName: string, raceLocation?: string): Promise<ScrapedResult | null> {
-  console.log(`Searching for athlete: ${athleteName}`);
-  
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+// 浏览器实例（复用）
+let browserInstance: puppeteer.Browser | null = null;
 
+async function getBrowser(): Promise<puppeteer.Browser> {
+  if (!browserInstance) {
+    browserInstance = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    });
+  }
+  return browserInstance;
+}
+
+/**
+ * 智能搜索 - 尝试多种姓名格式
+ */
+export async function searchAthleteResults(athleteName: string): Promise<{ 
+  name: string; 
+  url: string; 
+  location: string; 
+  date: string;
+  exactMatch: boolean;
+}[]> {
+  console.log(`[Search] Starting search for: "${athleteName}"`);
+  
+  const browser = await getBrowser();
+  const page = await browser.newPage();
+  
   try {
-    const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    await page.setViewport({ width: 1280, height: 800 });
     
-    // 1. 搜索选手
+    // 访问搜索页面
     const searchUrl = `https://www.hyresult.com/rankings?search=${encodeURIComponent(athleteName)}`;
+    console.log(`[Search] Navigating to: ${searchUrl}`);
+    
     await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 30000 });
     
-    // 等待搜索结果加载 - 使用 waitForFunction 替代 waitForTimeout
-    await page.waitForFunction(() => document.readyState === 'complete', { timeout: 5000 });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // 等待搜索结果加载 - 尝试多种可能的选择器
+    console.log('[Search] Waiting for results to load...');
+    try {
+      // 等待表格或结果列表出现
+      await page.waitForSelector('table tbody tr, .results-list, [data-testid="results"]', { 
+        timeout: 5000 
+      });
+    } catch (e) {
+      console.log('[Search] Selector timeout, proceeding anyway...');
+    }
+    
+    // 额外等待确保JS渲染完成
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
     const content = await page.content();
     const $ = cheerio.load(content);
     
-    // 查找选手链接
-    const athleteLinks: { name: string; url: string; location: string }[] = [];
+    // 调试：保存页面内容
+    console.log(`[Search] Page loaded, content length: ${content.length}`);
     
-    $('a[href*="/result/"]').each((_, elem) => {
-      const href = $(elem).attr('href');
-      const name = $(elem).text().trim();
-      const location = $(elem).closest('tr, div').find('.location, [class*="location"]').text().trim();
+    const results: { name: string; url: string; location: string; date: string; exactMatch: boolean }[] = [];
+    
+    // 尝试多种选择器查找结果
+    // 选择器1: 表格行
+    $('table tbody tr, .result-row, [class*="result"]').each((_, row) => {
+      const $row = $(row);
       
-      if (href && name && name.includes(athleteName)) {
-        athleteLinks.push({
-          name,
-          url: href.startsWith('http') ? href : `https://www.hyresult.com${href}`,
-          location
-        });
-      }
+      // 查找姓名链接
+      const $link = $row.find('a[href*="/result/"]').first();
+      if (!$link.length) return;
+      
+      const href = $link.attr('href');
+      const name = $link.text().trim();
+      
+      if (!href || !name) return;
+      
+      // 查找位置和日期
+      const location = $row.find('td:nth-child(2), .location, [class*="location"]').text().trim();
+      const date = $row.find('td:nth-child(3), .date, [class*="date"]').text().trim();
+      
+      // 检查是否是精确匹配
+      const normalizedSearch = athleteName.toLowerCase().replace(/\s+/g, '');
+      const normalizedName = name.toLowerCase().replace(/\s+/g, '');
+      const exactMatch = normalizedName.includes(normalizedSearch) || 
+                         normalizedSearch.includes(normalizedName);
+      
+      results.push({
+        name,
+        url: href.startsWith('http') ? href : `https://www.hyresult.com${href}`,
+        location: location || 'Unknown',
+        date: date || '',
+        exactMatch
+      });
     });
     
-    if (athleteLinks.length === 0) {
-      console.log('No athletes found');
-      return null;
+    // 选择器2: 直接查找所有结果链接
+    if (results.length === 0) {
+      $('a[href*="/result/"]').each((_, elem) => {
+        const $elem = $(elem);
+        const href = $elem.attr('href');
+        const name = $elem.text().trim();
+        
+        if (!href || !name || name.length < 2) return;
+        
+        // 过滤掉非选手链接（如导航链接）
+        if (name.length > 50 || name.includes('HYROX') || name.includes('Privacy')) return;
+        
+        const parent = $elem.parent().parent();
+        const location = parent.find('td:eq(1), td:eq(2), .location').text().trim();
+        const date = parent.find('td:eq(2), td:eq(3), .date').text().trim();
+        
+        const normalizedSearch = athleteName.toLowerCase().replace(/\s+/g, '');
+        const normalizedName = name.toLowerCase().replace(/\s+/g, '');
+        const exactMatch = normalizedName.includes(normalizedSearch) || 
+                           normalizedSearch.includes(normalizedName);
+        
+        // 去重
+        if (!results.find(r => r.url === href)) {
+          results.push({
+            name,
+            url: href.startsWith('http') ? href : `https://www.hyresult.com${href}`,
+            location: location || 'Unknown',
+            date: date || '',
+            exactMatch
+          });
+        }
+      });
     }
     
-    let selectedAthlete = athleteLinks[0];
-    if (raceLocation && athleteLinks.length > 1) {
-      const locationMatch = athleteLinks.find(a => 
-        a.location.toLowerCase().includes(raceLocation.toLowerCase())
-      );
-      if (locationMatch) selectedAthlete = locationMatch;
+    console.log(`[Search] Found ${results.length} results`);
+    
+    // 排序：精确匹配优先
+    results.sort((a, b) => (b.exactMatch ? 1 : 0) - (a.exactMatch ? 1 : 0));
+    
+    return results;
+    
+  } finally {
+    await page.close();
+  }
+}
+
+/**
+ * 抓取选手详情
+ */
+export async function scrapeHyresult(athleteName: string, raceLocation?: string): Promise<ScrapedResult | null> {
+  console.log(`[Scrape] Starting scrape for: "${athleteName}"`);
+  
+  // 1. 先搜索
+  const searchResults = await searchAthleteResults(athleteName);
+  
+  if (searchResults.length === 0) {
+    console.log('[Scrape] No search results found');
+    return null;
+  }
+  
+  console.log(`[Scrape] Found ${searchResults.length} search results`);
+  
+  // 2. 选择最佳匹配
+  let selectedResult = searchResults[0];
+  
+  // 如果有位置信息，尝试匹配
+  if (raceLocation && searchResults.length > 1) {
+    const locationMatch = searchResults.find(r => 
+      r.location.toLowerCase().includes(raceLocation.toLowerCase())
+    );
+    if (locationMatch) {
+      selectedResult = locationMatch;
+      console.log(`[Scrape] Matched by location: ${selectedResult.location}`);
     }
+  }
+  
+  // 优先选择精确匹配
+  const exactMatch = searchResults.find(r => r.exactMatch);
+  if (exactMatch) {
+    selectedResult = exactMatch;
+    console.log(`[Scrape] Using exact match: ${selectedResult.name}`);
+  }
+  
+  console.log(`[Scrape] Selected: ${selectedResult.name} at ${selectedResult.url}`);
+  
+  // 3. 抓取详情页
+  const browser = await getBrowser();
+  const page = await browser.newPage();
+  
+  try {
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36');
+    await page.goto(selectedResult.url, { waitUntil: 'networkidle2', timeout: 30000 });
     
-    console.log(`Found athlete: ${selectedAthlete.name}`);
-    
-    // 2. 进入详情页
-    await page.goto(selectedAthlete.url, { waitUntil: 'networkidle2', timeout: 30000 });
+    // 等待数据加载
     await new Promise(resolve => setTimeout(resolve, 3000));
     
-    try {
-      await page.waitForSelector('[class*="time"], [class*="split"], table', { timeout: 10000 });
-    } catch (e) {
-      console.log('Timeout waiting for data');
-    }
+    const content = await page.content();
+    const $ = cheerio.load(content);
     
-    const detailContent = await page.content();
-    const $detail = cheerio.load(detailContent);
+    // 提取数据
+    const raceName = $('h1').first().text().trim() || 
+                     $('.race-name').first().text().trim() || 
+                     'HYROX Race';
     
-    const raceName = $detail('h1, .race-name, [class*="race-title"]').first().text().trim();
-    const raceDate = $detail('[class*="date"], time').first().text().trim();
-    const location = $detail('[class*="location"]').first().text().trim() || selectedAthlete.location;
+    const raceDate = $('.date, time').first().text().trim() || selectedResult.date;
+    const location = $('.location').first().text().trim() || selectedResult.location;
     
-    const totalTimeText = $detail('[class*="total-time"], [class*="finish-time"]').first().text().trim();
+    const totalTimeText = $('.total-time, .finish-time, [class*="time"]').first().text().trim();
     const totalTime = parseTimeString(totalTimeText);
     
-    const splits = extractSplits($detail);
-    const gender = inferGender(selectedAthlete.name, $detail);
+    const splits = extractSplits($);
+    const gender = inferGender(selectedResult.name, $);
+    
+    console.log(`[Scrape] Successfully scraped data for ${selectedResult.name}`);
     
     return {
-      athleteName: selectedAthlete.name,
+      athleteName: selectedResult.name,
       gender,
-      raceName: raceName || 'HYROX Race',
+      raceName,
       raceDate: raceDate || new Date().toISOString().split('T')[0],
       raceLocation: location || 'Unknown',
       totalTime: totalTime || 0,
@@ -119,10 +235,10 @@ export async function scrapeHyresult(athleteName: string, raceLocation?: string)
     };
     
   } catch (error) {
-    console.error('Scraping error:', error);
+    console.error('[Scrape] Error:', error);
     return null;
   } finally {
-    await browser.close();
+    await page.close();
   }
 }
 
@@ -135,21 +251,37 @@ function extractSplits($: cheerio.CheerioAPI): ScrapedResult['splits'] {
   };
   
   const stationMap: Record<string, string> = {
-    'ski': 'skiErg', 'sled push': 'sledPush', 'burpee': 'burpeeBroadJump',
-    'row': 'rowing', 'farmer': 'farmersCarry', 'sandbag': 'sandbagLunges',
-    'wall ball': 'wallBalls', 'run 1': 'run1', 'run 2': 'run2',
-    'run 3': 'run3', 'run 4': 'run4', 'run 5': 'run5',
-    'run 6': 'run6', 'run 7': 'run7', 'run 8': 'run8',
+    'ski': 'skiErg', 'ski erg': 'skiErg', 'skierg': 'skiErg',
+    'sled push': 'sledPush', 'sled': 'sledPush',
+    'burpee': 'burpeeBroadJump', 'burpee broad jump': 'burpeeBroadJump',
+    'row': 'rowing', 'rowing': 'rowing',
+    'farmer': 'farmersCarry', "farmer's carry": 'farmersCarry',
+    'sandbag': 'sandbagLunges', 'lunges': 'sandbagLunges',
+    'wall ball': 'wallBalls', 'wall balls': 'wallBalls',
   };
   
-  $('table tr, [class*="split"], [class*="time"]').each((_, elem) => {
-    const text = $(elem).text().toLowerCase();
-    const timeText = $(elem).find('td:last-child, span:last-child, div:last-child').text().trim();
+  // 查找所有包含时间数据的行
+  $('table tr, .split-row, [class*="split"]').each((_, elem) => {
+    const $row = $(elem);
+    const text = $row.text().toLowerCase();
     
+    // 查找跑步时间
+    for (let i = 1; i <= 8; i++) {
+      if (text.includes(`run ${i}`) || text.includes(`run${i}`) || text.includes(`跑步 ${i}`)) {
+        const timeText = $row.find('td:last-child, .time, span:last-child').text().trim();
+        const seconds = parseTimeString(timeText);
+        if (seconds > 0) splits[`run${i}`] = seconds;
+      }
+    }
+    
+    // 查找Station时间
     for (const [keyword, key] of Object.entries(stationMap)) {
       if (text.includes(keyword)) {
+        const timeText = $row.find('td:last-child, .time, span:last-child').text().trim();
         const seconds = parseTimeString(timeText);
-        if (seconds > 0) splits[key] = seconds;
+        if (seconds > 0 && splits[key] === 0) {
+          splits[key] = seconds;
+        }
       }
     }
   });
@@ -159,6 +291,9 @@ function extractSplits($: cheerio.CheerioAPI): ScrapedResult['splits'] {
 
 function parseTimeString(timeStr: string): number {
   if (!timeStr) return 0;
+  timeStr = timeStr.trim();
+  
+  // 格式: HH:MM:SS 或 MM:SS 或 M:SS
   const match = timeStr.match(/^(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)$/);
   if (match) {
     const hours = parseInt(match[1] || '0');
@@ -166,61 +301,35 @@ function parseTimeString(timeStr: string): number {
     const seconds = parseFloat(match[3]);
     return hours * 3600 + minutes * 60 + seconds;
   }
+  
+  // 纯数字（秒）
   const num = parseFloat(timeStr);
-  return isNaN(num) ? 0 : num;
+  if (!isNaN(num) && num > 0) return num;
+  
+  return 0;
 }
 
 function inferGender(name: string, $: cheerio.CheerioAPI): 'male' | 'female' {
   const pageText = $('body').text().toLowerCase();
-  if (pageText.includes('women') || pageText.includes('female')) return 'female';
-  if (pageText.includes('men') || pageText.includes('male')) return 'male';
   
-  const femaleIndicators = ['娴', '婷', '娜', '丽', '芳', '敏', '静', '秀', '玲', '燕', '梅', '兰', '霞', '娟', '红', '艳', '妮', '媛', '琳', '洁', '萍', '雪', '颖', '慧', '雯', '茜', '萱', '怡', '欣', '悦'];
+  // 从页面内容判断
+  if (pageText.includes('women') || pageText.includes('female') || pageText.includes('womens')) return 'female';
+  if (pageText.includes('men') || pageText.includes('male') || pageText.includes('mens')) return 'male';
+  
+  // 从名字判断（常见女性名字特征）
+  const femaleIndicators = ['娴', '婷', '娜', '丽', '芳', '敏', '静', '秀', '玲', '燕', '梅', '兰', '霞', '娟', '红', '艳', '妮', '媛', '琳', '洁', '萍', '雪', '颖', '慧', '雯', '茜', '萱', '怡', '欣', '悦', '娇', '娥', '婉', '妮'];
   
   for (const indicator of femaleIndicators) {
     if (name.includes(indicator)) return 'female';
   }
+  
   return 'male';
 }
 
-export async function searchAthleteResults(athleteName: string): Promise<{ name: string; url: string; location: string; date: string }[]> {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-
-  try {
-    const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
-    
-    const searchUrl = `https://www.hyresult.com/rankings?search=${encodeURIComponent(athleteName)}`;
-    await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 30000 });
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const content = await page.content();
-    const $ = cheerio.load(content);
-    
-    const results: { name: string; url: string; location: string; date: string }[] = [];
-    
-    $('a[href*="/result/"]').each((_, elem) => {
-      const href = $(elem).attr('href');
-      const name = $(elem).text().trim();
-      const row = $(elem).closest('tr, div, [class*="row"]');
-      const location = row.find('[class*="location"]').text().trim();
-      const date = row.find('[class*="date"], time').text().trim();
-      
-      if (href && name) {
-        results.push({
-          name,
-          url: href.startsWith('http') ? href : `https://www.hyresult.com${href}`,
-          location,
-          date
-        });
-      }
-    });
-    
-    return results;
-  } finally {
-    await browser.close();
+// 清理浏览器（可选）
+export async function closeBrowser() {
+  if (browserInstance) {
+    await browserInstance.close();
+    browserInstance = null;
   }
 }
