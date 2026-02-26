@@ -1,7 +1,8 @@
 // HYROX Advance - Main App Component
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Analysis from './pages/Analysis';
+import MyResults from './pages/MyResults';
 
 function App() {
   return (
@@ -10,13 +11,14 @@ function App() {
         {/* Header */}
         <header className="bg-gray-900 text-white py-6">
           <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
-            <div>
+            <Link to="/" className="hover:opacity-80 transition">
               <h1 className="text-3xl font-bold text-orange-500">HYROX 进阶</h1>
               <p className="text-gray-400 mt-1">AI 成绩分析 · 个性化训练方案</p>
-            </div>
+            </Link>
             <nav className="hidden sm:flex gap-6">
-              <a href="/" className="text-gray-300 hover:text-white transition">首页</a>
-              <a href="/analysis" className="text-gray-300 hover:text-white transition">成绩分析</a>
+              <Link to="/" className="text-gray-300 hover:text-white transition">首页</Link>
+              <Link to="/my-results" className="text-gray-300 hover:text-white transition">我的成绩</Link>
+              <Link to="/analysis" className="text-gray-300 hover:text-white transition">成绩分析</Link>
             </nav>
           </div>
         </header>
@@ -24,6 +26,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/analysis" element={<Analysis />} />
+          <Route path="/my-results" element={<MyResults />} />
         </Routes>
 
         {/* Footer */}
