@@ -27,6 +27,8 @@ function MyResults() {
   const [error, setError] = useState('');
   const [profile, setProfile] = useState<AthleteProfile | null>(null);
   const [selectedRace, setSelectedRace] = useState<RaceResult | null>(null);
+  const [manualRuns, setManualRuns] = useState<Record<string, string>>({});
+  const [showRunInput, setShowRunInput] = useState(false);
 
   // 搜索并加载运动员成绩
   const handleSearch = async (nameOverride?: string) => {
@@ -170,10 +172,33 @@ function MyResults() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // 将时间字符串转换为秒
+  const parseTimeToSeconds = (timeStr: string): number => {
+    const parts = timeStr.split(':');
+    if (parts.length === 2) {
+      return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    }
+    if (parts.length === 3) {
+      return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+    }
+    return 0;
+  };
+
   // 分析当前选中的比赛
-  const analyzeRace = (race: RaceResult) => {
+  const analyzeRace = (race: RaceResult, useManualRuns = false) => {
     const splits = race.splits;
-    const runs = [1,2,3,4,5,6,7,8].map(i => splits[`run${i}`] || 0);
+    
+    // 使用手动输入的Running时间或原始数据
+    let runs: number[];
+    if (useManualRuns) {
+      runs = [1,2,3,4,5,6,7,8].map(i => {
+        const key = `run${i}`;
+        return manualRuns[key] ? parseTimeToSeconds(manualRuns[key]) : (splits[key] || 0);
+      });
+    } else {
+      runs = [1,2,3,4,5,6,7,8].map(i => splits[`run${i}`] || 0);
+    }
+    
     const stations = ['skiErg', 'sledPush', 'burpeeBroadJump', 'rowing', 'farmersCarry', 'sandbagLunges', 'wallBalls'];
     
     // 计算跑步平均值
@@ -287,9 +312,49 @@ function MyResults() {
           {/* 当前比赛分析 */}
           {selectedRace && (
             <div className="space-y-4">
+              {/* 手动输入Running时间 */}
+              {(() => {
+                const hasRunData = [1,2,3,4,5,6,7,8].some(i => selectedRace.splits[`run${i}`] > 0);
+                if (!hasRunData || showRunInput) {
+                  return (
+                    <div className="bg-white rounded-2xl shadow-lg p-5">
+                      <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-orange-500" />
+                        输入跑步分段数据
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        官网未提供跑步数据，请手动输入8段跑步时间（格式：分:秒）
+                      </p>
+                      <div className="grid grid-cols-4 gap-2 mb-4">
+                        {[1,2,3,4,5,6,7,8].map(i => (
+                          <div key={i} className="text-center">
+                            <label className="text-xs text-gray-500 block mb-1">第{i}段</label>
+                            <input
+                              type="text"
+                              placeholder="5:00"
+                              value={manualRuns[`run${i}`] || ''}
+                              onChange={(e) => setManualRuns(prev => ({ ...prev, [`run${i}`]: e.target.value }))}
+                              className="w-full px-2 py-2 text-center border rounded-lg text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setShowRunInput(false)}
+                        className="w-full py-2 bg-orange-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 transition"
+                      >
+                        保存并分析
+                      </button>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
               {/* 分析结果 */}
               {(() => {
-                const analysis = analyzeRace(selectedRace);
+                const hasManualRuns = Object.keys(manualRuns).length > 0;
+                const analysis = analyzeRace(selectedRace, hasManualRuns);
                 return (
                   <>
                     {/* 关键发现 */}
@@ -424,11 +489,23 @@ function MyResults() {
             </div>
           )}
 
+          {/* 编辑跑步数据 */}
+          {!showRunInput && (
+            <button
+              onClick={() => setShowRunInput(true)}
+              className="w-full mt-4 py-3 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition"
+            >
+              编辑跑步分段数据
+            </button>
+          )}
+
           {/* 搜索其他人 */}
           <button
             onClick={() => {
               setProfile(null);
               setSelectedRace(null);
+              setManualRuns({});
+              setShowRunInput(false);
               localStorage.removeItem('my_hyrox_profile');
             }}
             className="w-full mt-6 py-3 text-gray-500 hover:text-gray-700 text-sm"
