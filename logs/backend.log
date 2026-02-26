@@ -4,14 +4,5 @@ Scraping from URL: LR3MS4JI44D0BD
 [ScrapeURL] Starting scrape from URL: "LR3MS4JI44D0BD"
 [ScrapeURL] Fetching: https://www.hyresult.com/result/LR3MS4JI44D0BD
 [ScrapeURL] Found athlete: Andrew Xu
-[ScrapeURL] Running times extracted: {
-  run1: 0,
-  run2: 0,
-  run3: 0,
-  run4: 0,
-  run5: 0,
-  run6: 0,
-  run7: 0,
-  run8: 0
-}
+[ScrapeURL] Running times extracted: {}
 [ScrapeURL] Successfully scraped data for Andrew Xu

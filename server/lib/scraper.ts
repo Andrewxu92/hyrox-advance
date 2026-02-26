@@ -428,34 +428,42 @@ async function extractSplitsFromPage(page: puppeteer.Page, $: cheerio.CheerioAPI
         if (runningTab) (runningTab as HTMLElement).click();
       });
       
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // 获取页面HTML并直接正则提取
-      const pageHTML = await page.content();
-      
-      // 提取 Running 1-8 的时间
-      // 格式: "Running 1</h3>\n<p>02:53 top 7.3%</p>" 或类似
-      for (let i = 1; i <= 8; i++) {
-        // 方法1: 在 Running X 后面查找时间
-        const regex1 = new RegExp(`Running ${i}[^>]*>\\s*\\n?\\s*<[^>]*>(\\d+:\\d{2})`);
-        const match1 = pageHTML.match(regex1);
+      // 方法4: 直接从页面innerText中提取
+      const runningTimes = await page.evaluate(() => {
+        const times: Record<string, string> = {};
+        const bodyText = document.body.innerText;
         
-        if (match1) {
-          (splits as any)[`run${i}`] = parseTimeString(match1[1]);
-          continue;
+        // 匹配 "Running X\n02:53" 或 "Running X 02:53" 格式
+        for (let i = 1; i <= 8; i++) {
+          // 尝试多种可能的格式
+          const patterns = [
+            new RegExp(`Running ${i}[\\s\\n]+(\\d{1,2}:\\d{2})`),
+            new RegExp(`Running ${i}[^\\d]*?(\\d{1,2}:\\d{2})`),
+          ];
+          
+          for (const pattern of patterns) {
+            const match = bodyText.match(pattern);
+            if (match) {
+              times[`run${i}`] = match[1];
+              break;
+            }
+          }
         }
         
-        // 方法2: 更宽松的匹配
-        const regex2 = new RegExp(`Running ${i}\\s+(\\d+:\\d{2})`);
-        const match2 = pageHTML.match(regex2);
-        
-        if (match2) {
-          (splits as any)[`run${i}`] = parseTimeString(match2[1]);
+        return times;
+      });
+      
+      // 将提取的时间转换为秒
+      for (let i = 1; i <= 8; i++) {
+        const timeStr = runningTimes[`run${i}`];
+        if (timeStr) {
+          (splits as any)[`run${i}`] = parseTimeString(timeStr);
         }
       }
       
-      console.log('[ScrapeURL] Running times extracted:', 
-        Object.fromEntries(Object.entries(splits).filter(([k]) => k.startsWith('run'))));
+      console.log('[ScrapeURL] Running times extracted:', runningTimes);
     } catch (e) {
       console.log('[ScrapeURL] Error extracting running times:', e);
     }
