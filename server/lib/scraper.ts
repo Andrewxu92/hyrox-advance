@@ -199,15 +199,22 @@ export async function scrapeFromResultUrl(resultUrl: string): Promise<ScrapedRes
     const content = await page.content();
     const $ = cheerio.load(content);
     
-    // 检查是否404或无效页面
-    if (content.includes('not found') || content.includes('404') || $('h1').text().includes('Not Found')) {
+    // 检查是否404或无效页面（更精确的判断）
+    const pageTitle = $('title').text().toLowerCase();
+    const h1Text = $('h1').first().text().trim();
+    
+    if (pageTitle.includes('404') || 
+        pageTitle.includes('not found') || 
+        h1Text.toLowerCase() === 'not found' ||
+        h1Text.toLowerCase() === 'page not found' ||
+        content.includes('Page not found') && h1Text.length < 20) {
       console.error('[ScrapeURL] Page not found');
       return null;
     }
     
     // 提取选手姓名（h1标题）
-    const athleteName = $('h1').first().text().trim();
-    if (!athleteName) {
+    const athleteName = h1Text;
+    if (!athleteName || athleteName.length < 2) {
       console.error('[ScrapeURL] Could not find athlete name');
       return null;
     }
@@ -237,8 +244,8 @@ export async function scrapeFromResultUrl(resultUrl: string): Promise<ScrapedRes
       raceLocation: raceName,
       totalTime: totalTime || splits.run1 + splits.run2 + splits.run3 + splits.run4 + 
                   splits.run5 + splits.run6 + splits.run7 + splits.run8 +
-                  splits.skiErg + splits.sledPush + splits.burpeeBroadJump + splits.rowing +
-                  splits.farmersCarry + splits.sandbagLunges + splits.wallBalls,
+                  splits.skiErg + splits.sledPush + splits.sledPull + splits.burpeeBroadJump + 
+                  splits.rowing + splits.farmersCarry + splits.sandbagLunges + splits.wallBalls,
       splits
     };
     
@@ -262,11 +269,18 @@ async function extractSplitsFromPage(page: puppeteer.Page, $: cheerio.CheerioAPI
   };
   
   try {
-    // 尝试点击"Splits"标签
-    const splitsTab = await page.$('button:has-text("Splits"), [role="tab"]:has-text("Splits"), a:has-text("Splits")');
-    if (splitsTab) {
-      await splitsTab.click();
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    // 尝试点击"Splits"标签（使用evaluate查找）
+    const splitsTabHandle = await page.evaluateHandle(() => {
+      const buttons = Array.from(document.querySelectorAll('button, [role="tab"], a'));
+      return buttons.find(el => el.textContent?.includes('Splits'));
+    });
+    
+    if (splitsTabHandle) {
+      const element = splitsTabHandle.asElement();
+      if (element) {
+        await element.click();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     }
     
     // 重新获取内容
@@ -406,22 +420,44 @@ async function extractSplitsFromPage(page: puppeteer.Page, $: cheerio.CheerioAPI
     }
     
     // 提取跑步时间（从Running标签）
-    const runningTab = await page.$('button:has-text("Running"), [role="tab"]:has-text("Running"), a:has-text("Running")');
-    if (runningTab) {
-      await runningTab.click();
+    try {
+      // 点击 Running 标签
+      await page.evaluate(() => {
+        const buttons = Array.from(document.querySelectorAll('button, [role="tab"], a'));
+        const runningTab = buttons.find(el => el.textContent?.includes('Running'));
+        if (runningTab) (runningTab as HTMLElement).click();
+      });
+      
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const runningContent = await page.content();
-      const $r = cheerio.load(runningContent);
+      // 获取页面HTML并直接正则提取
+      const pageHTML = await page.content();
       
-      // 查找Running 1-8的时间
+      // 提取 Running 1-8 的时间
+      // 格式: "Running 1</h3>\n<p>02:53 top 7.3%</p>" 或类似
       for (let i = 1; i <= 8; i++) {
-        const runningText = $r(`*:contains("Running ${i}")`).text();
-        const timeMatch = runningText.match(/(\d+:\d{2})/);
-        if (timeMatch) {
-          splits[`run${i}` as keyof typeof splits] = parseTimeString(timeMatch[1]) as any;
+        // 方法1: 在 Running X 后面查找时间
+        const regex1 = new RegExp(`Running ${i}[^>]*>\\s*\\n?\\s*<[^>]*>(\\d+:\\d{2})`);
+        const match1 = pageHTML.match(regex1);
+        
+        if (match1) {
+          (splits as any)[`run${i}`] = parseTimeString(match1[1]);
+          continue;
+        }
+        
+        // 方法2: 更宽松的匹配
+        const regex2 = new RegExp(`Running ${i}\\s+(\\d+:\\d{2})`);
+        const match2 = pageHTML.match(regex2);
+        
+        if (match2) {
+          (splits as any)[`run${i}`] = parseTimeString(match2[1]);
         }
       }
+      
+      console.log('[ScrapeURL] Running times extracted:', 
+        Object.fromEntries(Object.entries(splits).filter(([k]) => k.startsWith('run'))));
+    } catch (e) {
+      console.log('[ScrapeURL] Error extracting running times:', e);
     }
     
   } catch (error) {

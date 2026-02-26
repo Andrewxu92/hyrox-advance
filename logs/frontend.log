@@ -3,16 +3,7 @@
 > vite
 
 
-  VITE v5.4.21  ready in 186 ms
+  VITE v5.4.21  ready in 204 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-2:25:31 PM [vite] hmr update /src/pages/MyResults.tsx, /src/index.css
-2:28:10 PM [vite] hmr update /src/pages/MyResults.tsx, /src/index.css
-2:28:45 PM [vite] hmr update /src/pages/MyResults.tsx, /src/index.css
-4:44:56 PM [vite] hmr update /src/components/SearchGuide.tsx, /src/index.css
-4:45:04 PM [vite] hmr update /src/components/SearchGuide.tsx, /src/index.css
-4:45:13 PM [vite] hmr update /src/components/SearchGuide.tsx, /src/index.css
-4:46:42 PM [vite] hmr update /src/components/SearchGuide.tsx, /src/index.css
-4:46:50 PM [vite] hmr update /src/pages/MyResults.tsx, /src/index.css
-4:47:27 PM [vite] hmr update /src/pages/MyResults.tsx, /src/index.css
