@@ -1,7 +1,44 @@
 import { Router } from 'express';
-import { scrapeHyresult, searchAthleteResults } from '../lib/scraper.js';
+import { scrapeHyresult, searchAthleteResults, scrapeFromResultUrl } from '../lib/scraper.js';
 
 const router = Router();
+
+// POST /api/scrape/url - Scrape from direct result URL
+router.post('/url', async (req, res) => {
+  try {
+    const { url } = req.body;
+    
+    if (!url) {
+      return res.status(400).json({
+        success: false,
+        error: 'URL is required'
+      });
+    }
+
+    console.log(`Scraping from URL: ${url}`);
+    
+    const result = await scrapeFromResultUrl(url);
+    
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        error: 'Failed to scrape data from URL. Please check the link is valid.'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Scrape URL error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to scrape data from URL',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
 
 // POST /api/scrape - Scrape athlete data from hyresult.com
 router.post('/', async (req, res) => {

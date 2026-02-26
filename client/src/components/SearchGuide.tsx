@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Search, Loader2, AlertCircle, User, Globe, Keyboard, Lightbulb } from 'lucide-react';
+import { Search, Loader2, AlertCircle, User, Globe, Keyboard, Lightbulb, Link2 } from 'lucide-react';
 
 interface SearchGuideProps {
   onSearch: (name: string) => void;
+  onUrlSubmit?: (url: string) => void;
   loading: boolean;
 }
 
@@ -18,10 +19,13 @@ const SEARCH_TIPS = [
   { icon: '👤', title: '姓或名', desc: '单独搜索"Xu"或"Liang"' },
 ];
 
-function SearchGuide({ onSearch, loading }: SearchGuideProps) {
+function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
   const [searchName, setSearchName] = useState('');
+  const [resultUrl, setResultUrl] = useState('');
   const [error, setError] = useState('');
+  const [urlError, setUrlError] = useState('');
   const [showTips, setShowTips] = useState(false);
+  const [activeTab, setActiveTab] = useState<'search' | 'url'>('search');
 
   const handleSearch = () => {
     if (!searchName.trim()) {
@@ -30,6 +34,25 @@ function SearchGuide({ onSearch, loading }: SearchGuideProps) {
     }
     setError('');
     onSearch(searchName.trim());
+  };
+
+  const handleUrlSubmit = () => {
+    if (!resultUrl.trim()) {
+      setUrlError('请输入比赛链接');
+      return;
+    }
+    
+    // 验证链接格式
+    const url = resultUrl.trim();
+    const isValid = url.match(/\/result\/[A-Z0-9]+/i) || url.match(/^[A-Z0-9]{10,20}$/i);
+    
+    if (!isValid) {
+      setUrlError('链接格式不正确，请检查');
+      return;
+    }
+    
+    setUrlError('');
+    onUrlSubmit?.(url);
   };
 
   // 生成可能的搜索变体
@@ -57,77 +80,168 @@ function SearchGuide({ onSearch, loading }: SearchGuideProps) {
 
   return (
     <div className="space-y-4">
-      {/* 搜索框 */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          输入你的姓名
-        </label>
-        
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={searchName}
-              onChange={(e) => {
-                setSearchName(e.target.value);
-                setError('');
-              }}
-              placeholder="姓名 / 拼音 / 英文名"
-              className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            />
-            {searchName && (
-              <button
-                onClick={() => setSearchName('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+      {/* Tab切换 */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="flex border-b">
           <button
-            onClick={handleSearch}
-            disabled={loading}
-            className="bg-orange-500 text-white px-5 py-3 rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 flex items-center gap-2"
+            onClick={() => setActiveTab('search')}
+            className={`flex-1 py-3 text-sm font-medium transition ${
+              activeTab === 'search'
+                ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+            <span className="flex items-center justify-center gap-2">
+              <Search className="w-4 h-4" />
+              按姓名搜索
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('url')}
+            className={`flex-1 py-3 text-sm font-medium transition ${
+              activeTab === 'url'
+                ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Link2 className="w-4 h-4" />
+              粘贴比赛链接
+            </span>
           </button>
         </div>
 
-        {/* 搜索提示 */}
-        <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-          <Lightbulb className="w-3 h-3" />
-          支持中文、拼音、英文名
-          <button 
-            onClick={() => setShowTips(!showTips)}
-            className="text-orange-500 hover:underline ml-1"
-          >
-            {showTips ? '隐藏' : '查看更多'}
-          </button>
-        </p>
-
-        {/* 展开提示 */}
-        {showTips && (
-          <div className="mt-4 space-y-2 p-4 bg-blue-50 rounded-xl">
-            {SEARCH_TIPS.map((tip, idx) => (
-              <div key={idx} className="flex items-start gap-3">
-                <span className="text-lg">{tip.icon}</span>
-                <div>
-                  <div className="text-sm font-medium text-gray-800">{tip.title}</div>
-                  <div className="text-xs text-gray-500">{tip.desc}</div>
+        <div className="p-6">
+          {activeTab === 'search' ? (
+            <>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                输入你的姓名
+              </label>
+              
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    value={searchName}
+                    onChange={(e) => {
+                      setSearchName(e.target.value);
+                      setError('');
+                    }}
+                    placeholder="姓名 / 拼音 / 英文名"
+                    className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0"
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  />
+                  {searchName && (
+                    <button
+                      onClick={() => setSearchName('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
+                <button
+                  onClick={handleSearch}
+                  disabled={loading}
+                  className="bg-orange-500 text-white px-5 py-3 rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 flex items-center gap-2"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                </button>
               </div>
-            ))}
-          </div>
-        )}
 
-        {/* 错误提示 */}
-        {error && (
-          <div className="mt-3 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">
-            <AlertCircle className="w-4 h-4" />
-            {error}
-          </div>
-        )}
+              {/* 搜索提示 */}
+              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                <Lightbulb className="w-3 h-3" />
+                支持中文、拼音、英文名
+                <button 
+                  onClick={() => setShowTips(!showTips)}
+                  className="text-orange-500 hover:underline ml-1"
+                >
+                  {showTips ? '隐藏' : '查看更多'}
+                </button>
+              </p>
+
+              {/* 展开提示 */}
+              {showTips && (
+                <div className="mt-4 space-y-2 p-4 bg-blue-50 rounded-xl">
+                  {SEARCH_TIPS.map((tip, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <span className="text-lg">{tip.icon}</span>
+                      <div>
+                        <div className="text-sm font-medium text-gray-800">{tip.title}</div>
+                        <div className="text-xs text-gray-500">{tip.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 错误提示 */}
+              {error && (
+                <div className="mt-3 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {error}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                粘贴 hyresult.com 比赛链接
+              </label>
+              
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    value={resultUrl}
+                    onChange={(e) => {
+                      setResultUrl(e.target.value);
+                      setUrlError('');
+                    }}
+                    placeholder="https://www.hyresult.com/result/..."
+                    className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0"
+                    onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
+                  />
+                  {resultUrl && (
+                    <button
+                      onClick={() => setResultUrl('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={handleUrlSubmit}
+                  disabled={loading}
+                  className="bg-orange-500 text-white px-5 py-3 rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 flex items-center gap-2"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '获取'}
+                </button>
+              </div>
+
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-gray-600">
+                <p className="font-medium text-blue-800 mb-1">💡 如何获取链接？</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>访问 <a href="https://www.hyresult.com" target="_blank" className="text-orange-500 underline">hyresult.com</a></li>
+                  <li>搜索你的名字并进入比赛结果页面</li>
+                  <li>复制浏览器地址栏的链接</li>
+                  <li>粘贴到上方输入框</li>
+                </ol>
+                <p className="mt-2 text-gray-400">示例：https://www.hyresult.com/result/LR3MS4JI44D0BD</p>
+              </div>
+
+              {/* 错误提示 */}
+              {urlError && (
+                <div className="mt-3 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {urlError}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* 搜索失败后的建议 */}

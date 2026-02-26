@@ -100,6 +100,56 @@ function MyResults() {
     }
   };
 
+  // 通过比赛链接获取数据
+  const handleUrlSubmit = async (url: string) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const res = await fetch(`${API_URL}/api/scrape/url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // 构建成绩对象
+        const race: RaceResult = {
+          id: Date.now().toString(),
+          raceName: data.data.raceName,
+          raceDate: data.data.raceDate,
+          raceLocation: data.data.raceLocation,
+          totalTime: data.data.totalTime,
+          formattedTotalTime: formatTime(data.data.totalTime),
+          splits: data.data.splits
+        };
+
+        setProfile({
+          name: data.data.athleteName,
+          gender: data.data.gender,
+          results: [race]
+        });
+
+        setSelectedRace(race);
+        
+        // 保存到本地存储
+        localStorage.setItem('my_hyrox_profile', JSON.stringify({
+          name: data.data.athleteName,
+          gender: data.data.gender
+        }));
+      } else {
+        setError(data.error || '无法获取数据，请检查链接是否正确');
+      }
+    } catch (err) {
+      setError('网络错误，请检查连接');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 加载本地保存的资料
   useEffect(() => {
     const saved = localStorage.getItem('my_hyrox_profile');
@@ -167,6 +217,7 @@ function MyResults() {
             setSearchName(name);
             handleSearch();
           }} 
+          onUrlSubmit={handleUrlSubmit}
           loading={loading} 
         />
       )}
