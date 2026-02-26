@@ -1,13 +1,4 @@
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Target, 
-  Award, 
-  AlertTriangle,
-  Clock,
-  Zap,
-  Activity
-} from 'lucide-react';
+import { Trophy, Target, TrendingUp, TrendingDown, Activity, AlertCircle, Zap, ChevronRight } from 'lucide-react';
 
 interface AnalysisReportProps {
   analysis: {
@@ -45,194 +36,152 @@ interface AnalysisReportProps {
     aiSummary: string;
     predictedImprovement: string;
   };
+  onBack?: () => void;
 }
 
-function AnalysisReport({ analysis }: AnalysisReportProps) {
-  const getLevelColor = (level: string) => {
+function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
+  const getLevelInfo = (level: string) => {
     switch (level) {
-      case 'elite': return 'text-purple-600 bg-purple-50';
-      case 'intermediate': return 'text-blue-600 bg-blue-50';
-      case 'beginner': return 'text-green-600 bg-green-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'elite': return { text: '精英级', color: 'text-purple-600', bg: 'bg-purple-50' };
+      case 'intermediate': return { text: '进阶级', color: 'text-blue-600', bg: 'bg-blue-50' };
+      case 'beginner': return { text: '入门级', color: 'text-green-600', bg: 'bg-green-50' };
+      default: return { text: level, color: 'text-gray-600', bg: 'bg-gray-50' };
     }
   };
 
-  const getLevelText = (level: string) => {
-    switch (level) {
-      case 'elite': return '精英';
-      case 'intermediate': return '进阶';
-      case 'beginner': return '入门';
-      default: return level;
-    }
-  };
-
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'fast': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'slowing': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <Activity className="w-4 h-4 text-blue-500" />;
-    }
-  };
+  const levelInfo = getLevelInfo(analysis.level);
+  const topWeakness = analysis.weaknesses[0];
+  const topStrength = analysis.strengths[0];
 
   return (
-    <div className="space-y-6">
-      {/* AI Summary */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-6">
+    <div className="max-w-md mx-auto pb-8">
+      {/* 返回按钮 */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="mb-4 text-gray-500 hover:text-gray-700 flex items-center gap-1"
+        >
+          ← 重新分析
+        </button>
+      )}
+
+      {/* 核心数据卡片 */}
+      <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white mb-6">
+        <div className="text-center mb-4">
+          <div className="text-5xl font-bold mb-1">{analysis.formattedTotalTime}</div>
+          <div className="text-orange-100">总成绩</div>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="bg-white/20 rounded-xl p-3">
+            <div className="text-2xl font-bold">{analysis.overallScore}</div>
+            <div className="text-xs text-orange-100">综合分</div>
+          </div>
+          <div className={`rounded-xl p-3 ${levelInfo.bg}`}>
+            <div className={`text-xl font-bold ${levelInfo.color}`}>{levelInfo.text}</div>
+            <div className="text-xs text-gray-500">水平</div>
+          </div>
+          <div className="bg-white/20 rounded-xl p-3">
+            <div className="text-2xl font-bold text-green-300">{analysis.predictedImprovement}</div>
+            <div className="text-xs text-orange-100">预计提升</div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI总结 */}
+      <div className="bg-blue-50 rounded-xl p-4 mb-6">
         <div className="flex items-start gap-3">
-          <Zap className="w-6 h-6 flex-shrink-0 mt-1" />
-          <div>
-            <h3 className="text-lg font-semibold mb-2">AI 教练总结</h3>
-            <p className="text-orange-100 leading-relaxed">{analysis.aiSummary}</p>
-          </div>
+          <Zap className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-blue-800 leading-relaxed">{analysis.aiSummary}</p>
         </div>
       </div>
 
-      {/* Score Card */}
-      <div className="grid md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-          <div className="text-3xl font-bold text-gray-900">{analysis.overallScore}</div>
-          <div className="text-sm text-gray-500">综合得分</div>
-          <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-orange-500 rounded-full"
-              style={{ width: `${analysis.overallScore}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-          <div className="text-3xl font-bold text-gray-900">{analysis.formattedTotalTime}</div>
-          <div className="text-sm text-gray-500">总用时</div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-          <div className={`text-3xl font-bold ${getLevelColor(analysis.level).split(' ')[0]}`}>
-            {getLevelText(analysis.level)}
-          </div>
-          <div className="text-sm text-gray-500">水平等级</div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-          <div className="text-lg font-bold text-green-600">{analysis.predictedImprovement}</div>
-          <div className="text-sm text-gray-500">预计提升</div>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Weaknesses */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            <h3 className="text-lg font-semibold">需要改进 (Top 3)</h3>
-          </div>
-
-          {analysis.weaknesses.length > 0 ? (
-            <div className="space-y-3">
-              {analysis.weaknesses.map((weakness, index) => (
-                <div key={weakness.station} className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-                  <div className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{weakness.displayName}</div>
-                    <div className="text-sm text-gray-600">
-                      用时 {weakness.formattedTime}
-                      <span className="text-red-600 ml-2">(+{Math.round(weakness.gap / 60 * 10) / 10} min)</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-red-600 font-medium">慢 {weakness.gapPercent}%</div>
-                  </div>
-                </div>
-              ))}
+      {/* 关键指标 */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* 最大弱项 */}
+        {topWeakness && (
+          <div className="bg-red-50 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-red-600 mb-2">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm font-medium">最大短板</span>
             </div>
-          ) : (
-            <p className="text-gray-500">表现均衡，没有明显弱点！</p>
-          )}
-        </div>
-
-        {/* Strengths */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Award className="w-5 h-5 text-green-500" />
-            <h3 className="text-lg font-semibold">你的优势</h3>
-          </div>
-
-          {analysis.strengths.length > 0 ? (
-            <div className="space-y-3">
-              {analysis.strengths.map((strength, index) => (
-                <div key={strength.station} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                  <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{strength.displayName}</div>
-                    <div className="text-sm text-gray-600">
-                      用时 {strength.formattedTime}
-                      <span className="text-green-600 ml-2">(-{Math.round(strength.advantage / 60 * 10) / 10} min)</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="text-lg font-bold text-gray-800">{topWeakness.displayName}</div>
+            <div className="text-sm text-red-600 mt-1">
+              慢了 {Math.round(topWeakness.gap / 60 * 10) / 10} 分钟
             </div>
-          ) : (
-            <p className="text-gray-500">继续努力，培养更多优势项目！</p>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* 最大优势 */}
+        {topStrength && (
+          <div className="bg-green-50 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-green-600 mb-2">
+              <Trophy className="w-4 h-4" />
+              <span className="text-sm font-medium">最大优势</span>
+            </div>
+            <div className="text-lg font-bold text-gray-800">{topStrength.displayName}</div>
+            <div className="text-sm text-green-600 mt-1">
+              快了 {Math.round(topStrength.advantage / 60 * 10) / 10} 分钟
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Pacing Analysis */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-5 h-5 text-blue-500" />
-          <h3 className="text-lg font-semibold">配速分析</h3>
+      {/* 配速趋势 */}
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Activity className="w-5 h-5 text-blue-500" />
+          <span className="font-semibold">8段跑步配速</span>
         </div>
-
-        <p className="text-gray-600 mb-4">{analysis.pacingAnalysis.summary}</p>
-
-        <div className="grid grid-cols-8 gap-1 md:gap-2">
-          {analysis.pacingAnalysis.runs.map((run) => (
-            <div key={run.runNumber} className="text-center">
-              <div className={`text-xs mb-1 ${
-                run.vsFirstRun > 30 ? 'text-red-600' : 
-                run.vsFirstRun > 15 ? 'text-yellow-600' : 'text-green-600'
-              }`}>
-                {run.vsFirstRun > 0 ? `+${run.vsFirstRun}s` : `${run.vsFirstRun}s`}
+        
+        <div className="flex justify-between items-end h-20 gap-1">
+          {analysis.pacingAnalysis.runs.map((run, idx) => {
+            const height = Math.max(20, 100 - run.vsFirstRun * 2);
+            const color = run.vsFirstRun > 30 ? 'bg-red-400' : run.vsFirstRun > 15 ? 'bg-yellow-400' : 'bg-green-400';
+            return (
+              <div key={idx} className="flex-1 flex flex-col items-center">
+                <div 
+                  className={`w-full rounded-t ${color} transition-all`}
+                  style={{ height: `${height}%` }}
+                />
+                <span className="text-xs text-gray-500 mt-1">{idx + 1}</span>
               </div>
-              <div className="flex justify-center mb-1">{getTrendIcon(run.trend)}</div>
-              <div className="bg-blue-100 rounded p-1 md:p-2">
-                <div className="text-xs font-medium">R{run.runNumber}</div>
-                <div className="text-xs text-gray-600">{run.formattedTime}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+        
+        <p className="text-sm text-gray-600 mt-3">{analysis.pacingAnalysis.summary}</p>
       </div>
 
-      {/* Recommendations */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      {/* 训练建议 */}
+      <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="flex items-center gap-2 mb-4">
           <Target className="w-5 h-5 text-orange-500" />
-          <h3 className="text-lg font-semibold">训练建议</h3>
+          <span className="font-semibold">下周练什么？</span>
         </div>
 
-        <div className="space-y-4">
-          {analysis.recommendations.map((rec, index) => (
-            <div key={index} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-                {rec.priority}
+        <div className="space-y-3">
+          {analysis.recommendations.slice(0, 3).map((rec, idx) => (
+            <div key={idx} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                {idx + 1}
               </div>
               <div className="flex-1">
-                <div className="font-medium text-gray-900">{rec.area}</div>
-                <p className="text-gray-600 mt-1">{rec.suggestion}</p>
-                <div className="mt-2 inline-block bg-green-100 text-green-700 text-sm px-2 py-1 rounded">
-                  预计提升: {rec.expectedImprovement}
-                </div>
+                <div className="font-medium text-gray-800">{rec.area}</div>
+                <p className="text-sm text-gray-600 mt-1">{rec.suggestion}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* 分享按钮 */}
+      <button 
+        onClick={() => alert('分享功能开发中')}
+        className="w-full mt-6 py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition"
+      >
+        保存结果 / 分享
+      </button>
     </div>
   );
 }
