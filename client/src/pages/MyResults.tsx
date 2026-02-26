@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { 
-  User, Search, Calendar, Trophy, TrendingUp, TrendingDown, 
-  ChevronRight, Loader2, AlertCircle, Activity, Target 
+  User, Calendar, Trophy, TrendingUp, TrendingDown, 
+  ChevronRight, Loader2, AlertCircle, Activity, Target, Zap
 } from 'lucide-react';
+import SearchGuide from '../components/SearchGuide';
 
 interface RaceResult {
   id: string;
@@ -28,8 +29,10 @@ function MyResults() {
   const [selectedRace, setSelectedRace] = useState<RaceResult | null>(null);
 
   // 搜索并加载运动员成绩
-  const handleSearch = async () => {
-    if (!searchName.trim()) {
+  const handleSearch = async (nameOverride?: string) => {
+    const nameToSearch = nameOverride || searchName;
+    
+    if (!nameToSearch.trim()) {
       setError('请输入姓名');
       return;
     }
@@ -40,7 +43,7 @@ function MyResults() {
     try {
       // 1. 搜索选手
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-      const searchRes = await fetch(`${API_URL}/api/scrape/search?q=${encodeURIComponent(searchName)}`);
+      const searchRes = await fetch(`${API_URL}/api/scrape/search?q=${encodeURIComponent(nameToSearch)}`);
       const searchData = await searchRes.json();
 
       if (!searchData.success || searchData.data.length === 0) {
@@ -157,41 +160,15 @@ function MyResults() {
         <p className="text-gray-500 text-sm mt-1">追踪进步，发现提升空间</p>
       </div>
 
-      {/* 搜索框 */}
+      {/* 搜索引导 */}
       {!profile && (
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            输入你的姓名
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
-              placeholder="姓名或拼音"
-              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            />
-            <button
-              onClick={handleSearch}
-              disabled={loading}
-              className="bg-orange-500 text-white px-5 py-3 rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-            </button>
-          </div>
-          
-          {error && (
-            <div className="mt-3 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-2 rounded-lg text-sm">
-              <AlertCircle className="w-4 h-4" />
-              {error}
-            </div>
-          )}
-          
-          <p className="text-xs text-gray-400 mt-3">
-            数据来自 hyresult.com 官网
-          </p>
-        </div>
+        <SearchGuide 
+          onSearch={(name) => {
+            setSearchName(name);
+            handleSearch();
+          }} 
+          loading={loading} 
+        />
       )}
 
       {/* 运动员资料 */}

@@ -1,2 +1,28 @@
 🏃 HYROX Advance server running on port 5001
 📊 Health check: http://localhost:5001/api/health
+OpenAI API error: APIConnectionError: Connection error.
+    at OpenAI.makeRequest (/home/admin/openclaw/workspace/hyrox-advance/node_modules/openai/src/core.ts:507:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async generateAnalysis (/home/admin/openclaw/workspace/hyrox-advance/server/lib/openai.ts:139:22)
+    at async <anonymous> (/home/admin/openclaw/workspace/hyrox-advance/server/routes/analysis.ts:45:22) {
+  status: undefined,
+  headers: undefined,
+  request_id: undefined,
+  error: undefined,
+  code: undefined,
+  param: undefined,
+  type: undefined,
+  cause: FetchError: request to https://api.openai.com/v1/chat/completions failed, reason: 
+      at ClientRequest.<anonymous> (/home/admin/openclaw/workspace/hyrox-advance/node_modules/node-fetch/lib/index.js:1501:11)
+      at ClientRequest.emit (node:events:519:28)
+      at emitErrorEvent (node:_http_client:107:11)
+      at TLSSocket.socketErrorListener (node:_http_client:574:5)
+      at TLSSocket.emit (node:events:531:35)
+      at emitErrorNT (node:internal/streams/destroy:170:8)
+      at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+      at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+    type: 'system',
+    errno: 'ETIMEDOUT',
+    code: 'ETIMEDOUT'
+  }
+}

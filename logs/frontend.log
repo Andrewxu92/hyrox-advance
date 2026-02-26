@@ -1,0 +1,12 @@
+
+> hyrox-advance-client@0.0.0 dev
+> vite
+
+
+  VITE v5.4.21  ready in 186 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+2:25:31 PM [vite] hmr update /src/pages/MyResults.tsx, /src/index.css
+2:28:10 PM [vite] hmr update /src/pages/MyResults.tsx, /src/index.css
+2:28:45 PM [vite] hmr update /src/pages/MyResults.tsx, /src/index.css
