@@ -39,7 +39,8 @@ function MyResults() {
 
     try {
       // 1. 搜索选手
-      const searchRes = await fetch(`http://localhost:5000/api/scrape/search?q=${encodeURIComponent(searchName)}`);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const searchRes = await fetch(`${API_URL}/api/scrape/search?q=${encodeURIComponent(searchName)}`);
       const searchData = await searchRes.json();
 
       if (!searchData.success || searchData.data.length === 0) {
@@ -50,7 +51,7 @@ function MyResults() {
 
       // 2. 抓取第一条结果（最近的比赛）
       const firstResult = searchData.data[0];
-      const scrapeRes = await fetch('http://localhost:5000/api/scrape', {
+      const scrapeRes = await fetch(`${API_URL}/api/scrape`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

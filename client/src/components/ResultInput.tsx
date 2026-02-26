@@ -105,7 +105,8 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     setSearchResults([]);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/scrape/search?q=${encodeURIComponent(searchQuery)}`);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const response = await fetch(`${API_URL}/api/scrape/search?q=${encodeURIComponent(searchQuery)}`);
       
       if (!response.ok) {
         throw new Error('搜索失败');
@@ -131,7 +132,8 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/scrape', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const response = await fetch(`${API_URL}/api/scrape`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -180,8 +182,9 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
 
     try {
       const estimatedSplits = estimateSplits(quickInput);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       
-      const response = await fetch('http://localhost:5000/api/analysis', {
+      const response = await fetch(`${API_URL}/api/analysis`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
