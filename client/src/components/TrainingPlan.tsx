@@ -1,5 +1,7 @@
-import { useState } from 'react'
-import { Calendar, Clock, Dumbbell, Flame } from 'lucide-react'
+import { useState } from 'react';
+import { Calendar, Clock, Dumbbell, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatedCard, FadeIn } from './ui/Animations';
 
 interface TrainingPlanProps {
   level: 'beginner' | 'intermediate' | 'elite';
@@ -8,11 +10,11 @@ interface TrainingPlanProps {
 }
 
 export default function TrainingPlan({ level: _level, weaknesses, strengths: _strengths }: TrainingPlanProps) {
-  const [activeWeek, setActiveWeek] = useState(1)
+  const [activeWeek, setActiveWeek] = useState(1);
   
   // 生成8周训练计划
   const generatePlan = () => {
-    const primaryWeakness = weaknesses[0] || '综合提升'
+    const primaryWeakness = weaknesses[0] || '综合提升';
     
     const weeks = [
       {
@@ -119,114 +121,179 @@ export default function TrainingPlan({ level: _level, weaknesses, strengths: _st
           { day: 7, type: 'rest', title: '🏆 比赛日', desc: '全力以赴！', duration: 0 },
         ]
       },
-    ]
+    ];
     
-    return weeks
-  }
+    return weeks;
+  };
   
-  const plan = generatePlan()
-  const currentWeek = plan.find(w => w.week === activeWeek)
+  const plan = generatePlan();
+  const currentWeek = plan.find(w => w.week === activeWeek);
   
   const getTypeIcon = (type: string) => {
     switch(type) {
-      case 'strength': return <Dumbbell className="w-4 h-4" />
-      case 'endurance': return <Clock className="w-4 h-4" />
-      case 'combined': return <Flame className="w-4 h-4" />
-      case 'mock': return <Calendar className="w-4 h-4" />
-      default: return null
+      case 'strength': return <Dumbbell className="w-4 h-4" />;
+      case 'endurance': return <Clock className="w-4 h-4" />;
+      case 'combined': return <Flame className="w-4 h-4" />;
+      case 'mock': return <Calendar className="w-4 h-4" />;
+      default: return null;
     }
-  }
+  };
   
   const getTypeColor = (type: string) => {
     switch(type) {
-      case 'strength': return 'bg-blue-100 text-blue-700'
-      case 'endurance': return 'bg-green-100 text-green-700'
-      case 'combined': return 'bg-orange-100 text-orange-700'
-      case 'mock': return 'bg-purple-100 text-purple-700'
-      case 'skill': return 'bg-yellow-100 text-yellow-700'
-      case 'rest': return 'bg-gray-100 text-gray-500'
-      default: return 'bg-gray-100'
+      case 'strength': return 'bg-blue-100 text-blue-700';
+      case 'endurance': return 'bg-green-100 text-green-700';
+      case 'combined': return 'bg-orange-100 text-orange-700';
+      case 'mock': return 'bg-purple-100 text-purple-700';
+      case 'skill': return 'bg-yellow-100 text-yellow-700';
+      case 'rest': return 'bg-gray-100 text-gray-500';
+      default: return 'bg-gray-100';
     }
-  }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch(type) {
+      case 'test': return '测试';
+      case 'skill': return '技术';
+      case 'strength': return '力量';
+      case 'endurance': return '有氧';
+      case 'combined': return '组合';
+      case 'mock': return '模拟';
+      case 'rest': return '休息';
+      default: return type;
+    }
+  };
+
+  const goToPreviousWeek = () => {
+    if (activeWeek > 1) setActiveWeek(activeWeek - 1);
+  };
+
+  const goToNextWeek = () => {
+    if (activeWeek < 8) setActiveWeek(activeWeek + 1);
+  };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <h2 className="text-xl font-bold mb-4">8周训练计划</h2>
-      
-      {/* Week Selector */}
-      <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
-        {plan.map((w) => (
-          <button
-            key={w.week}
-            onClick={() => setActiveWeek(w.week)}
-            className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap ${
-              activeWeek === w.week 
-                ? 'bg-hyrox-orange text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            第{w.week}周
-          </button>
-        ))}
-      </div>
-      
-      {currentWeek && (
-        <div>
-          <div className="mb-4 p-4 bg-hyrox-black text-white rounded-lg">
-            <p className="text-sm text-gray-400">第{currentWeek.week}周重点</p>
-            <p className="text-lg font-semibold">{currentWeek.focus}</p>
+    <AnimatedCard>
+      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <FadeIn>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg sm:text-xl font-bold">8周训练计划</h2>
+            <div className="text-sm text-gray-500">
+              第 {activeWeek} / 8 周
+            </div>
           </div>
-          
-          <div className="space-y-3">
-            {currentWeek.days.map((day) => (
-              <div 
-                key={day.day} 
-                className={`p-4 rounded-lg border ${
-                  day.type === 'rest' ? 'opacity-60' : ''
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500 w-12">
-                      第{day.day}天
-                    </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getTypeColor(day.type)}`}>
-                      {getTypeIcon(day.type)}
-                      {day.type === 'test' && '测试'}
-                      {day.type === 'skill' && '技术'}
-                      {day.type === 'strength' && '力量'}
-                      {day.type === 'endurance' && '有氧'}
-                      {day.type === 'combined' && '组合'}
-                      {day.type === 'mock' && '模拟'}
-                      {day.type === 'rest' && '休息'}
-                    </span>
-                  </div>
-                  
-                  {day.duration > 0 && (
-                    <span className="text-sm text-gray-500">
-                      {day.duration}分钟
-                    </span>
-                  )}
-                </div>
-                
-                <h4 className="font-semibold mb-1">{day.title}</h4>
-                <p className="text-sm text-gray-600">{day.desc}</p>
+        </FadeIn>
+        
+        {/* Week Selector - Mobile Optimized */}
+        <FadeIn delay={0.1}>
+          <div className="relative">
+            {/* Mobile Navigation Arrows */}
+            <button
+              onClick={goToPreviousWeek}
+              disabled={activeWeek === 1}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center disabled:opacity-30 sm:hidden"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            
+            <button
+              onClick={goToNextWeek}
+              disabled={activeWeek === 8}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center disabled:opacity-30 sm:hidden"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+
+            {/* Week Buttons */}
+            <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-4 mb-4 scrollbar-hide mx-8 sm:mx-0">
+              {plan.map((w) => (
+                <motion.button
+                  key={w.week}
+                  onClick={() => setActiveWeek(w.week)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors ${
+                    activeWeek === w.week 
+                      ? 'bg-orange-500 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="hidden sm:inline">第{w.week}周</span>
+                  <span className="sm:hidden">{w.week}</span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
+        
+        <AnimatePresence mode="wait">
+          {currentWeek && (
+            <motion.div
+              key={currentWeek.week}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mb-4 p-3 sm:p-4 bg-gray-900 text-white rounded-lg">
+                <p className="text-xs sm:text-sm text-gray-400">第{currentWeek.week}周重点</p>
+                <p className="text-base sm:text-lg font-semibold">{currentWeek.focus}</p>
               </div>
-            ))}
+              
+              <div className="space-y-2 sm:space-y-3">
+                {currentWeek.days.map((day, idx) => (
+                  <motion.div
+                    key={day.day}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    whileHover={{ scale: 1.01, backgroundColor: day.type === 'rest' ? '#f9fafb' : '#fff7ed' }}
+                    className={`p-3 sm:p-4 rounded-lg border transition-colors cursor-pointer ${
+                      day.type === 'rest' ? 'bg-gray-50 opacity-70' : 'bg-white border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs sm:text-sm text-gray-500 w-10 sm:w-12 flex-shrink-0">
+                            第{day.day}天
+                          </span>
+                          <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getTypeColor(day.type)}`}>
+                            {getTypeIcon(day.type)}
+                            {getTypeLabel(day.type)}
+                          </span>
+                        </div>
+                        
+                        <h4 className="font-semibold text-sm sm:text-base truncate">{day.title}</h4>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{day.desc}</p>
+                      </div>
+                      
+                      {day.duration > 0 && (
+                        <span className="text-xs sm:text-sm text-gray-500 flex-shrink-0">
+                          {day.duration}min
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <FadeIn delay={0.2}>
+          <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-semibold mb-2 text-sm sm:text-base">💡 训练提示</h4>
+            <ul className="text-xs sm:text-sm text-gray-700 space-y-1">
+              <li>• 每次训练前充分热身 10-15 分钟</li>
+              <li>• 注意动作质量，宁可慢也不要变形</li>
+              <li>• 休息日可以进行轻度拉伸或瑜伽</li>
+              <li>• 保证每晚 7-8 小时睡眠</li>
+              <li>• 训练后及时补充蛋白质和碳水</li>
+            </ul>
           </div>
-        </div>
-      )}
-      
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h4 className="font-semibold mb-2">💡 训练提示</h4>
-        <ul className="text-sm text-gray-700 space-y-1">
-          <li>• 每次训练前充分热身 10-15 分钟</li>
-          <li>• 注意动作质量，宁可慢也不要变形</li>
-          <li>• 休息日可以进行轻度拉伸或瑜伽</li>
-          <li>• 保证每晚 7-8 小时睡眠</li>
-          <li>• 训练后及时补充蛋白质和碳水</li>
-        </ul>
+        </FadeIn>
       </div>
-    </div>
-  )
+    </AnimatedCard>
+  );
 }
