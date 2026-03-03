@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Activity, User, BarChart3, Home } from 'lucide-react';
+import { Menu, X, Activity, User, BarChart3, Home, Users } from 'lucide-react';
 import HomePage from './pages/Home';
 import Analysis from './pages/Analysis';
 import MyResults from './pages/MyResults';
+import Athletes from './pages/Athletes';
 
 // Animated page wrapper
 function AnimatedPage({ children }: { children: React.ReactNode }) {
@@ -55,6 +56,9 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                 </MobileNavLink>
                 <MobileNavLink to="/my-results" onClick={onClose} icon={<User className="w-5 h-5" />}>
                   我的成绩
+                </MobileNavLink>
+                <MobileNavLink to="/athletes" onClick={onClose} icon={<Users className="w-5 h-5" />}>
+                  运动员管理
                 </MobileNavLink>
                 <MobileNavLink to="/analysis" onClick={onClose} icon={<BarChart3 className="w-5 h-5" />}>
                   成绩分析
@@ -129,6 +133,10 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
             <User className="w-4 h-4" />
             我的成绩
           </NavLink>
+          <NavLink to="/athletes" isActive={isActive('/athletes')}>
+            <Users className="w-4 h-4" />
+            运动员
+          </NavLink>
           <NavLink to="/analysis" isActive={isActive('/analysis')}>
             <BarChart3 className="w-4 h-4" />
             成绩分析
@@ -177,6 +185,7 @@ function MobileTabBar() {
   const tabs = [
     { path: '/', label: '首页', icon: Home },
     { path: '/my-results', label: '成绩', icon: User },
+    { path: '/athletes', label: '运动员', icon: Users },
     { path: '/analysis', label: '分析', icon: BarChart3 },
   ];
   
@@ -236,18 +245,26 @@ function AppContent() {
               } 
             />
             <Route 
-              path="/analysis" 
-              element={
-                <AnimatedPage>
-                  <Analysis />
-                </AnimatedPage>
-              } 
-            />
-            <Route 
               path="/my-results" 
               element={
                 <AnimatedPage>
                   <MyResults />
+                </AnimatedPage>
+              } 
+            />
+            <Route 
+              path="/athletes" 
+              element={
+                <AnimatedPage>
+                  <Athletes />
+                </AnimatedPage>
+              } 
+            />
+            <Route 
+              path="/analysis" 
+              element={
+                <AnimatedPage>
+                  <Analysis />
                 </AnimatedPage>
               } 
             />
