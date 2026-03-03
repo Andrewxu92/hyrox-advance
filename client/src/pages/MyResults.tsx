@@ -86,10 +86,14 @@ function MyResults() {
       console.log('Results response data:', data);
 
       if (data.success) {
-        const resultsWithTotal = (data.data || []).map((r: any) => ({
-          ...r,
-          totalTime: calculateTotalTime(r)
-        }));
+        // 后端返回的是 { result, athlete } 结构，需要展平
+        const resultsWithTotal = (data.data || []).map((item: any) => {
+          const result = item.result || item; // 兼容两种格式
+          return {
+            ...result,
+            totalTime: calculateTotalTime(result)
+          };
+        });
         setResults(resultsWithTotal);
         
         if (resultsWithTotal.length > 0) {
