@@ -145,7 +145,7 @@ function Analysis() {
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    <Target className="w-4 h-4" /
+                    <Target className="w-4 h-4" />
                     <span className="hidden sm:inline">分析报告</span>
                     <span className="sm:hidden">报告</span>
                   </motion.button>
@@ -159,7 +159,7 @@ function Analysis() {
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    <BarChart3 className="w-4 h-4" /
+                    <BarChart3 className="w-4 h-4" />
                     <span className="hidden sm:inline">雷达图</span>
                     <span className="sm:hidden">图表</span>
                   </motion.button>

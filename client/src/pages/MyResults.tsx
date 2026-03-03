@@ -48,19 +48,26 @@ function MyResults() {
 
   const loadAthletes = async () => {
     try {
+      console.log('Loading athletes from:', `${API_URL}/api/athletes`);
       const res = await fetch(`${API_URL}/api/athletes`);
+      console.log('Response status:', res.status);
       const data = await res.json();
+      console.log('Response data:', data);
 
       if (data.success) {
         setAthletes(data.data || []);
         if (data.data && data.data.length > 0) {
-          selectAthlete(data.data[0]);
+          await selectAthlete(data.data[0]);
         }
       } else {
         setError(data.error || '加载运动员失败');
       }
-    } catch (err) {
-      setError('无法连接到服务器。请确保后端服务运行中。');
+    } catch (err: any) {
+      const errorMsg = err.message || '无法连接到服务器';
+      setError(`无法连接到服务器 (${errorMsg})。请确保：
+1. 后端服务正在运行 (npm run dev)
+2. 后端地址是 ${API_URL}
+3. 如果在浏览器中访问，请确保后端允许 CORS`);
       console.error('Error loading athletes:', err);
     }
   };
@@ -72,8 +79,11 @@ function MyResults() {
     setError('');
 
     try {
+      console.log('Loading results for athlete:', athlete.id);
       const res = await fetch(`${API_URL}/api/results?athleteId=${athlete.id}`);
+      console.log('Results response status:', res.status);
       const data = await res.json();
+      console.log('Results response data:', data);
 
       if (data.success) {
         const resultsWithTotal = (data.data || []).map((r: any) => ({
@@ -91,8 +101,8 @@ function MyResults() {
       } else {
         setError(data.error || '加载成绩失败');
       }
-    } catch (err) {
-      setError('加载成绩失败');
+    } catch (err: any) {
+      setError(`加载成绩失败：${err.message}`);
       console.error('Error loading results:', err);
     } finally {
       setLoading(false);
