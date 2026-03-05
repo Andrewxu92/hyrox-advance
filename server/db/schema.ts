@@ -1,7 +1,7 @@
 // HYROX Advance Database Schema
 // SQLite + Drizzle ORM
 
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 // ============================================
@@ -67,7 +67,13 @@ export const results = sqliteTable('results', {
   notes: text('notes'),
   createdAt: text('created_at').notNull().$default(() => new Date().toISOString()),
   updatedAt: text('updated_at').notNull().$default(() => new Date().toISOString()),
-});
+}, (table) => ({
+  // 索引优化
+  athleteIdIdx: index('athlete_id_idx').on(table.athleteId),
+  raceDateIdx: index('race_date_idx').on(table.raceDate),
+  totalTimeIdx: index('total_time_idx').on(table.totalTime),
+  athleteRaceIdx: index('athlete_race_idx').on(table.athleteId, table.raceDate),
+}));
 
 // ============================================
 // AI 分析报告表

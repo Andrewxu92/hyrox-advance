@@ -1,5 +1,7 @@
 import puppeteer from 'puppeteer';
 import * as cheerio from 'cheerio';
+import { getCachedData, setCachedData, scrapeWithCache } from './cache';
+import { withRetry, scrapeWithTimeoutAndRetry, isRetryableError } from './retry';
 
 export interface ScrapedResult {
   athleteName: string;
