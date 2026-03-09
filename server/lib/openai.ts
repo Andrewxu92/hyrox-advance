@@ -1,8 +1,14 @@
 import OpenAI from 'openai';
 import { formatTime, getBenchmarks, STATION_DISPLAY_NAMES, determineLevel, calculateTotalTime } from './hyrox-data.js';
 
+// Support both OpenAI and DashScope (Aliyun) APIs
+// DashScope uses OpenAI-compatible API format
+const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
+  apiKey: DASHSCOPE_API_KEY || OPENAI_API_KEY || '',
+  baseURL: DASHSCOPE_API_KEY ? 'https://dashscope.aliyuncs.com/compatible-mode/v1' : undefined
 });
 
 export interface AthleteInfo {
@@ -75,9 +81,9 @@ export async function generateAnalysis(
   splits: HyroxSplits,
   athleteInfo: AthleteInfo
 ): Promise<AnalysisResult> {
-  // Validate OpenAI API key
-  if (!process.env.OPENAI_API_KEY) {
-    console.warn('OPENAI_API_KEY not set, using mock analysis');
+  // Validate API key (OpenAI or DashScope)
+  if (!OPENAI_API_KEY && !DASHSCOPE_API_KEY) {
+    console.warn('OPENAI_API_KEY or DASHSCOPE_API_KEY not set, using mock analysis');
     return generateMockAnalysis(splits, athleteInfo);
   }
 
@@ -136,8 +142,11 @@ export async function generateAnalysis(
   const prompt = buildAnalysisPrompt(splits, athleteInfo, totalTime, level, weaknesses, strengths, pacingAnalysis);
 
   try {
+    // Use appropriate model based on API provider
+    const model = DASHSCOPE_API_KEY ? 'qwen-max' : 'gpt-4';
+    
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model,
       messages: [
         {
           role: 'system',
@@ -194,7 +203,7 @@ export async function generateAnalysis(
       predictedImprovement: aiData.predictedImprovement || '5-10% improvement possible with consistent training'
     };
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('AI API error:', error);
     return generateMockAnalysis(splits, athleteInfo);
   }
 }
