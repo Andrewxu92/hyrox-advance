@@ -124,7 +124,8 @@ function Analysis() {
                       onClick={handleReset}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm sm:text-base active:scale-95 touch-manipulation"
+                      className="bg-gray-100 text-gray-700 px-4 py-3 min-h-[44px] rounded-lg hover:bg-gray-200 transition text-sm sm:text-base active:scale-95 touch-manipulation"
+                      aria-label="重新输入成绩"
                     >
                       重新输入
                     </motion.button>
@@ -139,13 +140,16 @@ function Analysis() {
                     onClick={() => setActiveTab('report')}
                     whileHover={{ backgroundColor: '#fff7ed' }}
                     whileTap={{ scale: 0.98 }}
-                    className={`px-4 py-3 font-medium transition flex items-center gap-2 whitespace-nowrap ${
+                    className={`px-4 py-3 min-h-[44px] font-medium transition flex items-center gap-2 whitespace-nowrap ${
                       activeTab === 'report' 
                         ? 'text-orange-500 border-b-2 border-orange-500' 
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
+                    role="tab"
+                    aria-selected={activeTab === 'report'}
+                    aria-controls="report-panel"
                   >
-                    <Target className="w-4 h-4" />
+                    <Target className="w-4 h-4" aria-hidden="true" />
                     <span className="hidden sm:inline">分析报告</span>
                     <span className="sm:hidden">报告</span>
                   </motion.button>
@@ -153,13 +157,16 @@ function Analysis() {
                     onClick={() => setActiveTab('chart')}
                     whileHover={{ backgroundColor: '#fff7ed' }}
                     whileTap={{ scale: 0.98 }}
-                    className={`px-4 py-3 font-medium transition flex items-center gap-2 whitespace-nowrap ${
+                    className={`px-4 py-3 min-h-[44px] font-medium transition flex items-center gap-2 whitespace-nowrap ${
                       activeTab === 'chart' 
                         ? 'text-orange-500 border-b-2 border-orange-500' 
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
+                    role="tab"
+                    aria-selected={activeTab === 'chart'}
+                    aria-controls="chart-panel"
                   >
-                    <BarChart3 className="w-4 h-4" />
+                    <BarChart3 className="w-4 h-4" aria-hidden="true" />
                     <span className="hidden sm:inline">雷达图</span>
                     <span className="sm:hidden">图表</span>
                   </motion.button>
@@ -202,9 +209,11 @@ function Analysis() {
                     onClick={() => setShowTraining(!showTraining)}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-orange-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center gap-2 text-sm sm:text-base shadow-md active:scale-95 touch-manipulation"
+                    className="bg-orange-500 text-white px-4 sm:px-6 py-3 sm:py-3 min-h-[44px] rounded-lg font-semibold hover:bg-orange-600 transition flex items-center gap-2 text-sm sm:text-base shadow-md active:scale-95 touch-manipulation"
+                    aria-expanded={showTraining}
+                    aria-controls="training-plan"
                   >
-                    <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
                     {showTraining ? '隐藏训练计划' : '生成训练计划'}
                   </motion.button>
                 </div>

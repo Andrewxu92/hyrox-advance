@@ -18,12 +18,15 @@ export function LoadingSpinner({ size = 'md', className = '' }: LoadingSpinnerPr
       className={`${sizeMap[size]} ${className}`}
       animate={{ rotate: 360 }}
       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+      role="status"
+      aria-label="加载中"
     >
       <svg
         className="w-full h-full"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
         <circle
           className="opacity-25"
@@ -58,6 +61,9 @@ export function LoadingOverlay({ message = '加载中...', subMessage, visible }
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="loading-title"
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -72,17 +78,20 @@ export function LoadingOverlay({ message = '加载中...', subMessage, visible }
               animate={{ rotate: 360 }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
               style={{ borderTopColor: '#f97316' }}
+              aria-hidden="true"
             />
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 1.5, repeat: Infinity }}
+              aria-hidden="true"
             >
               <span className="text-2xl">🏃</span>
             </motion.div>
           </div>
         </div>
         <motion.h3
+          id="loading-title"
           className="text-lg font-semibold text-gray-800 mb-2"
           animate={{ opacity: [1, 0.5, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -141,14 +150,15 @@ export function LoadingButton({
   return (
     <button
       disabled={loading || disabled}
-      className={`relative ${className}`}
+      className={`relative min-h-[44px] px-4 py-2 ${className}`}
+      aria-busy={loading}
       {...props}
     >
       <span className={`${loading ? 'opacity-0' : 'opacity-100'} transition-opacity`}>
         {children}
       </span>
       {loading && (
-        <span className="absolute inset-0 flex items-center justify-center gap-2">
+        <span className="absolute inset-0 flex items-center justify-center gap-2" aria-hidden="true">
           <LoadingSpinner size="sm" />
           {loadingText}
         </span>

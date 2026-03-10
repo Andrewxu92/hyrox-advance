@@ -372,27 +372,29 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
 
       {/* 模式切换 */}
       <FadeIn>
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6" role="group" aria-label="输入模式选择">
           <button
             onClick={() => setMode('quick')}
-            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex-1 py-3 px-4 min-h-[44px] rounded-xl font-medium transition-all duration-300 ${
               mode === 'quick' 
                 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg scale-105' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
+            aria-pressed={mode === 'quick'}
           >
-            <Zap className="w-4 h-4 inline mr-1" />
+            <Zap className="w-4 h-4 inline mr-1" aria-hidden="true" />
             快速估算
           </button>
           <button
             onClick={() => setMode('scrape')}
-            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex-1 py-3 px-4 min-h-[44px] rounded-xl font-medium transition-all duration-300 ${
               mode === 'scrape' 
                 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg scale-105' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
+            aria-pressed={mode === 'scrape'}
           >
-            <Search className="w-4 h-4 inline mr-1" />
+            <Search className="w-4 h-4 inline mr-1" aria-hidden="true" />
             官网抓取
           </button>
         </div>
@@ -404,17 +406,18 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="flex-1 py-2 text-sm text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
+              className="flex-1 py-3 min-h-[44px] text-sm text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
+              aria-expanded={showHistory}
             >
-              <History className="w-4 h-4 inline mr-1" />
+              <History className="w-4 h-4 inline mr-1" aria-hidden="true" />
               {showHistory ? '隐藏历史记录' : `查看历史记录 (${history.length})`}
             </button>
             <button
               onClick={handleClearData}
-              className="px-3 py-2 text-sm text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition"
-              title="清除所有数据"
+              className="px-4 py-3 min-h-[44px] text-sm text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition"
+              aria-label="清除所有数据"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </FadeIn>
@@ -520,7 +523,8 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   value={quickInput.totalTime}
                   onChange={(e) => setQuickInput({ ...quickInput, totalTime: e.target.value })}
                   placeholder="1:15:30"
-                  className="w-full px-4 py-4 text-xl sm:text-2xl font-bold text-center border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0 transition-colors"
+                  className="w-full px-4 py-4 min-h-[56px] text-xl sm:text-2xl font-bold text-center border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors"
+                  aria-label="HYROX 总成绩"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm hidden sm:block">
                   时:分:秒
@@ -641,15 +645,17 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="姓名或拼音"
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 transition-colors"
+                  className="flex-1 px-4 py-3 min-h-[44px] border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors"
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  aria-label="搜索选手姓名"
                 />
                 <button
                   onClick={handleSearch}
                   disabled={searching || !searchQuery.trim()}
-                  className="bg-orange-500 text-white px-4 sm:px-5 py-3 rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 active:scale-95 touch-manipulation"
+                  className="bg-orange-500 text-white px-4 sm:px-5 py-3 min-h-[44px] min-w-[44px] rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 active:scale-95 touch-manipulation"
+                  aria-label="搜索选手"
                 >
-                  {searching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                  {searching ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <Search className="w-5 h-5" aria-hidden="true" />}
                 </button>
               </div>
             </div>
@@ -672,11 +678,12 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
                         onClick={() => handleSelectResult(result)}
-                        className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition active:scale-[0.98] touch-manipulation"
+                        className="w-full text-left p-4 min-h-[44px] bg-gray-50 rounded-lg hover:bg-orange-50 transition active:scale-[0.98] touch-manipulation"
+                        aria-label={`选择 ${result.name}${result.location ? ` - ${result.location}` : ''}`}
                       >
                         <div className="flex justify-between items-center">
                           <span className="font-medium">{result.name}</span>
-                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                          <ChevronRight className="w-4 h-4 text-gray-400" aria-hidden="true" />
                         </div>
                         {result.location && (
                           <span className="text-sm text-gray-500">{result.location}</span>

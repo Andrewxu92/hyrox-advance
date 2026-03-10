@@ -53,8 +53,10 @@ function ToastItem({ id, type, title, message, duration = 5000, onRemove }: Toas
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: 100, scale: 0.95 }}
       className={`w-full max-w-sm pointer-events-auto ${colorMap[type]} border rounded-xl shadow-lg p-4 flex gap-3`}
+      role="alert"
+      aria-live="polite"
     >
-      <Icon className={`w-5 h-5 flex-shrink-0 ${iconColorMap[type]}`} />
+      <Icon className={`w-5 h-5 flex-shrink-0 ${iconColorMap[type]}`} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <h4 className="font-medium text-sm">{title}</h4>
         {message && (
@@ -63,7 +65,8 @@ function ToastItem({ id, type, title, message, duration = 5000, onRemove }: Toas
       </div>
       <button
         onClick={() => onRemove(id)}
-        className="flex-shrink-0 opacity-60 hover:opacity-100 transition"
+        className="flex-shrink-0 p-2 min-h-[44px] min-w-[44px] opacity-60 hover:opacity-100 hover:bg-black/5 rounded-lg transition"
+        aria-label="关闭通知"
       >
         <X className="w-4 h-4" />
       </button>
@@ -79,7 +82,12 @@ interface ToastContainerProps {
 
 export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   return (
-    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+    <div 
+      className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none" 
+      role="region" 
+      aria-label="通知"
+      aria-live="polite"
+    >
       <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
           <ToastItem key={toast.id} {...toast} onRemove={onRemove} />

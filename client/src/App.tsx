@@ -34,6 +34,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            aria-hidden="true"
           />
           <motion.nav
             initial={{ x: '100%' }}
@@ -41,26 +42,29 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 h-full w-64 bg-white shadow-2xl z-50 lg:hidden"
+            role="navigation"
+            aria-label="主导航菜单"
           >
             <div className="p-4">
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700"
+                className="absolute top-4 right-4 p-3 min-h-[44px] min-w-[44px] text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                aria-label="关闭菜单"
               >
                 <X className="w-6 h-6" />
               </button>
               
               <div className="mt-12 space-y-2">
-                <MobileNavLink to="/" onClick={onClose} icon={<Home className="w-5 h-5" />}>
+                <MobileNavLink to="/" onClick={onClose} icon={<Home className="w-5 h-5" />} ariaLabel="首页">
                   首页
                 </MobileNavLink>
-                <MobileNavLink to="/my-results" onClick={onClose} icon={<User className="w-5 h-5" />}>
+                <MobileNavLink to="/my-results" onClick={onClose} icon={<User className="w-5 h-5" />} ariaLabel="我的成绩">
                   我的成绩
                 </MobileNavLink>
-                <MobileNavLink to="/athletes" onClick={onClose} icon={<Users className="w-5 h-5" />}>
+                <MobileNavLink to="/athletes" onClick={onClose} icon={<Users className="w-5 h-5" />} ariaLabel="运动员管理">
                   运动员管理
                 </MobileNavLink>
-                <MobileNavLink to="/analysis" onClick={onClose} icon={<BarChart3 className="w-5 h-5" />}>
+                <MobileNavLink to="/analysis" onClick={onClose} icon={<BarChart3 className="w-5 h-5" />} ariaLabel="成绩分析">
                   成绩分析
                 </MobileNavLink>
               </div>
@@ -76,12 +80,14 @@ function MobileNavLink({
   to, 
   children, 
   onClick, 
-  icon 
+  icon,
+  ariaLabel
 }: { 
   to: string; 
   children: React.ReactNode; 
   onClick: () => void;
   icon: React.ReactNode;
+  ariaLabel: string;
 }) {
   const location = useLocation();
   const isActive = location.pathname === to;
@@ -90,11 +96,13 @@ function MobileNavLink({
     <Link
       to={to}
       onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+      className={`flex items-center gap-3 px-4 py-4 min-h-[44px] rounded-lg transition ${
         isActive 
           ? 'bg-orange-50 text-orange-600 font-medium' 
           : 'text-gray-600 hover:bg-gray-50'
       }`}
+      aria-label={ariaLabel}
+      aria-current={isActive ? 'page' : undefined}
     >
       {icon}
       {children}
@@ -146,7 +154,9 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
         {/* Mobile Menu Button */}
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 text-white hover:bg-white/10 rounded-lg transition"
+          className="lg:hidden p-3 min-h-[44px] min-w-[44px] text-white hover:bg-white/10 rounded-lg transition"
+          aria-label="打开菜单"
+          aria-expanded="false"
         >
           <Menu className="w-6 h-6" />
         </button>
@@ -167,11 +177,12 @@ function NavLink({
   return (
     <Link
       to={to}
-      className={`flex items-center gap-1.5 transition ${
+      className={`flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg transition ${
         isActive 
           ? 'text-orange-500 font-medium' 
-          : 'text-gray-300 hover:text-white'
+          : 'text-gray-300 hover:text-white hover:bg-white/10'
       }`}
+      aria-current={isActive ? 'page' : undefined}
     >
       {children}
     </Link>
@@ -190,7 +201,7 @@ function MobileTabBar() {
   ];
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40 safe-area-bottom" role="navigation" aria-label="底部导航">
       <div className="flex justify-around items-center h-16">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;
@@ -203,13 +214,15 @@ function MobileTabBar() {
               className={`flex flex-col items-center justify-center flex-1 h-full transition ${
                 isActive ? 'text-orange-500' : 'text-gray-500'
               }`}
+              aria-label={tab.label}
+              aria-current={isActive ? 'page' : undefined}
             >
               <motion.div
                 whileTap={{ scale: 0.9 }}
-                className="flex flex-col items-center"
+                className="flex flex-col items-center min-h-[44px] min-w-[44px] justify-center"
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-xs mt-0.5">{tab.label}</span>
+                <Icon className="w-6 h-6" />
+                <span className="text-xs mt-1">{tab.label}</span>
               </motion.div>
             </Link>
           );

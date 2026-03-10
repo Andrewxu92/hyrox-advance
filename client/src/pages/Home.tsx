@@ -21,17 +21,19 @@ function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate('/my-results')}
-              className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition flex items-center justify-center gap-2"
+              className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition flex items-center justify-center gap-2 min-h-[56px] active:scale-[0.98] touch-manipulation"
+              aria-label="查看我的成绩"
             >
-              <User className="w-5 h-5" />
+              <User className="w-5 h-5" aria-hidden="true" />
               查看我的成绩
             </button>
             
             <button
               onClick={() => navigate('/analysis')}
-              className="bg-white/10 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/20 transition flex items-center justify-center gap-2"
+              className="bg-white/10 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/20 transition flex items-center justify-center gap-2 min-h-[56px] active:scale-[0.98] touch-manipulation"
+              aria-label="快速分析"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-5 h-5" aria-hidden="true" />
               快速分析
             </button>
           </div>
@@ -109,7 +111,8 @@ function Home() {
           <p className="text-gray-600 mb-6">输入姓名，立即查看你的HYROX成绩档案</p>
           <button
             onClick={() => navigate('/my-results')}
-            className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition"
+            className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition min-h-[56px] active:scale-[0.98] touch-manipulation"
+            aria-label="立即查看我的成绩"
           >
             立即查看我的成绩 →
           </button>

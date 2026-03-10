@@ -95,7 +95,8 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
         <FadeIn>
           <button
             onClick={onBack}
-            className="mb-4 text-gray-500 hover:text-gray-700 flex items-center gap-1 transition active:scale-95 touch-manipulation"
+            className="mb-4 px-4 py-2 min-h-[44px] text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg flex items-center gap-1 transition active:scale-95 touch-manipulation"
+            aria-label="重新分析"
           >
             ← 重新分析
           </button>
@@ -319,7 +320,8 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
           onClick={() => alert('分享功能开发中')}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="w-full mt-6 py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition active:scale-[0.98] touch-manipulation"
+          className="w-full mt-6 py-3 min-h-[44px] bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition active:scale-[0.98] touch-manipulation"
+          aria-label="保存结果或分享"
         >
           保存结果 / 分享
         </motion.button>
