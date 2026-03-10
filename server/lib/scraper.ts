@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 import * as cheerio from 'cheerio';
-import { getCachedData, setCachedData, scrapeWithCache } from './cache';
-import { withRetry, scrapeWithTimeoutAndRetry, isRetryableError } from './retry';
+import { getCachedData, setCachedData, scrapeWithCache } from './cache.js';
+import { withRetry, scrapeWithTimeoutAndRetry, isRetryableError } from './retry.js';
 
 export interface ScrapedResult {
   athleteName: string;
@@ -271,19 +271,15 @@ async function extractSplitsFromPage(page: puppeteer.Page, $: cheerio.CheerioAPI
   };
   
   try {
-    // 尝试点击"Splits"标签（使用evaluate查找）
-    const splitsTabHandle = await page.evaluateHandle(() => {
+    // 尝试点击"Splits"标签
+    await page.evaluate(() => {
       const buttons = Array.from(document.querySelectorAll('button, [role="tab"], a'));
-      return buttons.find(el => el.textContent?.includes('Splits'));
-    });
-    
-    if (splitsTabHandle) {
-      const element = splitsTabHandle.asElement();
-      if (element) {
-        await element.click();
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      const splitsTab = buttons.find(el => el.textContent?.includes('Splits'));
+      if (splitsTab) {
+        (splitsTab as HTMLElement).click();
       }
-    }
+    });
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     // 重新获取内容
     const content = await page.content();

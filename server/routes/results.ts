@@ -4,7 +4,7 @@
 import { Router } from 'express';
 import { eq, desc, asc, and, gte, lte, sql } from 'drizzle-orm';
 import { getDatabase, initializeDatabase } from '../db/index.js';
-import { results, athletes, type NewResult } from '../db/schema.js';
+import { results, athletes, analysisReports, type NewResult } from '../db/schema.js';
 import { formatTime, calculateTotalTime, STATION_NAMES, RUN_NAMES } from '../lib/hyrox-data.js';
 
 const router = Router();
@@ -24,19 +24,15 @@ router.get('/', async (req, res) => {
     
     const { athleteId, limit = 50 } = req.query;
     
-    let query = db.select({
+    const resultList = await db.select({
       result: results,
       athlete: athletes,
     })
     .from(results)
     .leftJoin(athletes, eq(results.athleteId, athletes.id))
-    .orderBy(desc(results.raceDate));
-    
-    if (athleteId) {
-      query = query.where(eq(results.athleteId, athleteId as string));
-    }
-    
-    const resultList = await query.limit(Number(limit));
+    .where(athleteId ? eq(results.athleteId, athleteId as string) : undefined)
+    .orderBy(desc(results.raceDate))
+    .limit(Number(limit));
     
     res.json({
       success: true,

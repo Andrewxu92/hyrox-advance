@@ -1,8 +1,9 @@
 // HYROX 抓取缓存机制
 // 减少重复请求，提升性能
 
-import { getDatabase } from '../db/index';
+import { getDatabase } from '../db/index.js';
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { eq, lt } from 'drizzle-orm';
 
 // ============================================
 // 缓存表结构
@@ -50,7 +51,9 @@ class MemoryCache {
     // 如果缓存满了，删除最旧的
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey) {
+        this.cache.delete(firstKey);
+      }
     }
 
     this.cache.set(key, { data, timestamp: Date.now() });
