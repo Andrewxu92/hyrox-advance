@@ -100,6 +100,27 @@ export interface AnalysisReport {
     transition: number; // 转换能力
   };
   
+  // 能量系统分析（新增）
+  energySystemAnalysis?: {
+    atpCpContribution: number;      // ATP-CP 系统贡献 (0-10s 爆发力) 0-100
+    glycolyticContribution: number; // 糖酵解系统 (30s-2min 高强度) 0-100
+    aerobicContribution: number;    // 有氧氧化系统 (持续耐力) 0-100
+    dominantSystem: 'ATP-CP' | 'Glycolytic' | 'Aerobic';
+    analysis: string;
+  };
+  
+  // 肌肉群疲劳分析（新增）
+  muscleFatigueAnalysis?: {
+    upperBodyPush: number;   // 上肢推力疲劳指数 0-100
+    upperBodyPull: number;   // 上肢拉力疲劳指数 0-100
+    lowerBodyQuad: number;   // 股四头肌疲劳指数 0-100
+    lowerBodyPosterior: number; // 后链肌群疲劳指数 0-100
+    coreStability: number;   // 核心稳定性指数 0-100
+    weakestGroup: string;
+    strongestGroup: string;
+    analysis: string;
+  };
+  
   // 改进建议
   recommendations: {
     priority: number;

@@ -37,6 +37,24 @@ interface AnalysisReportProps {
     }[];
     aiSummary: string;
     predictedImprovement: string;
+    // Advanced analysis (new)
+    energySystemAnalysis?: {
+      atpCpContribution: number;
+      glycolyticContribution: number;
+      aerobicContribution: number;
+      dominantSystem: 'ATP-CP' | 'Glycolytic' | 'Aerobic';
+      analysis: string;
+    };
+    muscleFatigueAnalysis?: {
+      upperBodyPush: number;
+      upperBodyPull: number;
+      lowerBodyQuad: number;
+      lowerBodyPosterior: number;
+      coreStability: number;
+      weakestGroup: string;
+      strongestGroup: string;
+      analysis: string;
+    };
   };
   onBack?: () => void;
 }

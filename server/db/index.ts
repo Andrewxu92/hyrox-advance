@@ -22,13 +22,18 @@ export function getDatabase() {
     // 创建 SQLite 数据库
     const sqlite = new Database(DB_PATH);
     
-    // 启用外键约束
-    sqlite.pragma('foreign_keys = ON');
+    // 性能优化配置
+    sqlite.pragma('journal_mode = WAL'); // WAL 模式提升并发性能
+    sqlite.pragma('cache_size = -64000'); // 64MB 缓存
+    sqlite.pragma('foreign_keys = ON'); // 启用外键约束
+    sqlite.pragma('synchronous = NORMAL'); // 平衡性能和安全
+    sqlite.pragma('temp_store = MEMORY'); // 临时表存储在内存
     
     // 创建 Drizzle ORM 实例
     db = drizzle(sqlite, { schema });
     
     console.log('✅ Database connected:', DB_PATH);
+    console.log('🚀 Database optimizations enabled: WAL mode, 64MB cache');
   }
   
   return db;
@@ -140,12 +145,24 @@ export async function initializeDatabase() {
       )
     `);
     
-    // 创建索引
+    // 创建索引（优化查询性能）
     await database.run(sql`CREATE INDEX IF NOT EXISTS idx_results_athlete ON results(athlete_id)`);
+    await database.run(sql`CREATE INDEX IF NOT EXISTS idx_results_date ON results(race_date)`);
+    await database.run(sql`CREATE INDEX IF NOT EXISTS idx_results_total_time ON results(total_time)`);
+    await database.run(sql`CREATE INDEX IF NOT EXISTS idx_results_athlete_race ON results(athlete_id, race_date)`);
+    
     await database.run(sql`CREATE INDEX IF NOT EXISTS idx_analysis_result ON analysis_reports(result_id)`);
     await database.run(sql`CREATE INDEX IF NOT EXISTS idx_analysis_athlete ON analysis_reports(athlete_id)`);
+    await database.run(sql`CREATE INDEX IF NOT EXISTS idx_analysis_created ON analysis_reports(created_at)`);
+    
     await database.run(sql`CREATE INDEX IF NOT EXISTS idx_plans_athlete ON training_plans(athlete_id)`);
+    await database.run(sql`CREATE INDEX IF NOT EXISTS idx_plans_status ON training_plans(status)`);
+    
     await database.run(sql`CREATE INDEX IF NOT EXISTS idx_logs_plan ON training_logs(plan_id)`);
+    await database.run(sql`CREATE INDEX IF NOT EXISTS idx_logs_athlete ON training_logs(athlete_id)`);
+    await database.run(sql`CREATE INDEX IF NOT EXISTS idx_logs_completed ON training_logs(completed_at)`);
+    
+    console.log('✅ Database indexes created (12 indexes for optimal performance)');
     
     console.log('✅ Database tables created successfully');
     

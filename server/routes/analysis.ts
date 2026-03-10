@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { generateAnalysis, AthleteInfo, HyroxSplits } from '../lib/openai.js';
 import { calculateTotalTime, formatTime, determineLevel, getBenchmarks, STATION_DISPLAY_NAMES } from '../lib/hyrox-data.js';
+import { generateAdvancedAnalysis } from '../lib/advanced-analysis.js';
 
 const router = Router();
 
@@ -41,12 +42,18 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Generate analysis
+    // Generate AI analysis
     const analysis = await generateAnalysis(splits as HyroxSplits, athleteInfo as AthleteInfo);
+    
+    // Generate advanced analysis (energy system + muscle fatigue)
+    const advancedAnalysis = generateAdvancedAnalysis(splits);
 
     res.json({
       success: true,
-      data: analysis
+      data: {
+        ...analysis,
+        ...advancedAnalysis
+      }
     });
   } catch (error) {
     console.error('Analysis route error:', error);
@@ -105,6 +112,9 @@ router.post('/quick', async (req, res) => {
     const lastRun = runTimes[runTimes.length - 1];
     const avgRun = runTimes.reduce((a, b) => a + b, 0) / runTimes.length;
 
+    // Generate advanced analysis
+    const advancedAnalysis = generateAdvancedAnalysis(splits);
+
     res.json({
       success: true,
       data: {
@@ -123,7 +133,8 @@ router.post('/quick', async (req, res) => {
           lastRun,
           degradation: lastRun - firstRun,
           average: avgRun
-        }
+        },
+        ...advancedAnalysis
       }
     });
   } catch (error) {
