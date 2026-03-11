@@ -1,6 +1,7 @@
-import { Trophy, Target, TrendingUp, TrendingDown, Activity, AlertCircle, Zap } from 'lucide-react';
+import { Trophy, Target, TrendingUp, TrendingDown, Activity, AlertCircle, Zap, Dumbbell, Flame } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { FadeIn, StaggerContainer, StaggerItem, AnimatedCard } from './ui/Animations';
+import { PacingChart } from './PacingChart';
 
 interface AnalysisReportProps {
   analysis: {
@@ -88,8 +89,34 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
     visible: { opacity: 1, y: 0 }
   };
 
+  // Helper for energy system display
+  const getDominantSystemName = (system: string) => {
+    switch (system) {
+      case 'ATP-CP': return 'ATP-CP (爆发力)';
+      case 'Glycolytic': return '糖酵解 (高强度)';
+      case 'Aerobic': return '有氧氧化 (耐力)';
+      default: return system;
+    }
+  };
+
+  // Helper for muscle group color
+  const getMuscleGroupColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    if (score >= 40) return 'text-orange-600';
+    return 'text-red-600';
+  };
+
+  // Helper for muscle group bar color
+  const getMuscleGroupBarColor = (score: number) => {
+    if (score >= 80) return 'bg-green-500';
+    if (score >= 60) return 'bg-yellow-500';
+    if (score >= 40) return 'bg-orange-500';
+    return 'bg-red-500';
+  };
+
   return (
-    <div className="max-w-md mx-auto pb-8">
+    <div className="max-w-4xl mx-auto pb-8">
       {/* 返回按钮 */}
       {onBack && (
         <FadeIn>
@@ -169,7 +196,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
         </div>
       </motion.div>
 
-      {/* AI总结 */}
+      {/* AI 总结 */}
       <FadeIn delay={0.3}>
         <AnimatedCard>
           <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
@@ -230,59 +257,208 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
         )}
       </motion.div>
 
-      {/* 配速趋势 */}
-      <FadeIn delay={0.4}>
-        <AnimatedCard>
-          <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-            <div className="flex items-center gap-2 mb-4">
-              <Activity className="w-5 h-5 text-blue-500" />
-              <span className="font-semibold">8段跑步配速</span>
-            </div>
-            
-            <div className="flex justify-between items-end h-24 sm:h-28 gap-1">
-              {analysis.pacingAnalysis.runs.map((run, idx) => {
-                const height = Math.max(20, 100 - run.vsFirstRun * 2);
-                const color = run.vsFirstRun > 30 ? 'bg-red-400' : run.vsFirstRun > 15 ? 'bg-yellow-400' : 'bg-green-400';
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${height}%` }}
-                    transition={{ duration: 0.5, delay: 0.5 + idx * 0.05 }}
-                    className="flex-1 flex flex-col items-center"
-                  >
-                    <motion.div
-                      className={`w-full rounded-t ${color}`}
-                      whileHover={{ opacity: 0.8 }}
-                    />
-                    <span className="text-xs text-gray-500 mt-1">{idx + 1}</span>
-                  </motion.div>
-                );
-              })}
-            </div>
-            
-            <div className="flex justify-center gap-4 mt-3 text-xs text-gray-500">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-400 rounded"></div>
-                <span>稳定</span>
+      {/* 能量系统分析 */}
+      {analysis.energySystemAnalysis && (
+        <FadeIn delay={0.4}>
+          <AnimatedCard>
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
+              <div className="flex items-center gap-2 mb-4">
+                <Flame className="w-5 h-5 text-orange-500" />
+                <span className="font-semibold text-lg">⚡ 能量系统分析</span>
               </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-yellow-400 rounded"></div>
-                <span>放缓</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-400 rounded"></div>
-                <span>显著放缓</span>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 能量系统贡献 */}
+                <div className="space-y-4">
+                  <div className="text-sm text-gray-600 mb-2">
+                    主导系统：<span className="font-semibold text-orange-600">{getDominantSystemName(analysis.energySystemAnalysis.dominantSystem)}</span>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">ATP-CP (爆发力)</span>
+                      <span className="font-medium">{analysis.energySystemAnalysis.atpCpContribution}%</span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analysis.energySystemAnalysis.atpCpContribution}%` }}
+                        transition={{ duration: 0.8, delay: 0.5 }}
+                        className="h-full bg-red-500 rounded-full"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">糖酵解 (高强度)</span>
+                      <span className="font-medium">{analysis.energySystemAnalysis.glycolyticContribution}%</span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analysis.energySystemAnalysis.glycolyticContribution}%` }}
+                        transition={{ duration: 0.8, delay: 0.6 }}
+                        className="h-full bg-yellow-500 rounded-full"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">有氧氧化 (耐力)</span>
+                      <span className="font-medium">{analysis.energySystemAnalysis.aerobicContribution}%</span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analysis.energySystemAnalysis.aerobicContribution}%` }}
+                        transition={{ duration: 0.8, delay: 0.7 }}
+                        className="h-full bg-green-500 rounded-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 分析说明 */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">📊 分析解读</h4>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{analysis.energySystemAnalysis.analysis}</p>
+                </div>
               </div>
             </div>
-            
-            <p className="text-sm text-gray-600 mt-3">{analysis.pacingAnalysis.summary}</p>
-          </div>
-        </AnimatedCard>
+          </AnimatedCard>
+        </FadeIn>
+      )}
+
+      {/* 肌肉群疲劳分析 */}
+      {analysis.muscleFatigueAnalysis && (
+        <FadeIn delay={0.5}>
+          <AnimatedCard>
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
+              <div className="flex items-center gap-2 mb-4">
+                <Dumbbell className="w-5 h-5 text-blue-500" />
+                <span className="font-semibold text-lg">💪 肌肉群疲劳分析</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 肌肉群评分 */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xs text-gray-600 mb-1">最强肌群</div>
+                      <div className="text-lg font-bold text-green-600">{analysis.muscleFatigueAnalysis.strongestGroup}</div>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xs text-gray-600 mb-1">最弱肌群</div>
+                      <div className="text-lg font-bold text-red-600">{analysis.muscleFatigueAnalysis.weakestGroup}</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">上肢推力</span>
+                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.upperBodyPush)}`}>
+                        {analysis.muscleFatigueAnalysis.upperBodyPush}/100
+                      </span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analysis.muscleFatigueAnalysis.upperBodyPush}%` }}
+                        transition={{ duration: 0.8, delay: 0.5 }}
+                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.upperBodyPush)}`}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">上肢拉力</span>
+                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.upperBodyPull)}`}>
+                        {analysis.muscleFatigueAnalysis.upperBodyPull}/100
+                      </span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analysis.muscleFatigueAnalysis.upperBodyPull}%` }}
+                        transition={{ duration: 0.8, delay: 0.6 }}
+                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.upperBodyPull)}`}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">下肢股四头肌</span>
+                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.lowerBodyQuad)}`}>
+                        {analysis.muscleFatigueAnalysis.lowerBodyQuad}/100
+                      </span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analysis.muscleFatigueAnalysis.lowerBodyQuad}%` }}
+                        transition={{ duration: 0.8, delay: 0.7 }}
+                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.lowerBodyQuad)}`}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">下肢后链</span>
+                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.lowerBodyPosterior)}`}>
+                        {analysis.muscleFatigueAnalysis.lowerBodyPosterior}/100
+                      </span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analysis.muscleFatigueAnalysis.lowerBodyPosterior}%` }}
+                        transition={{ duration: 0.8, delay: 0.8 }}
+                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.lowerBodyPosterior)}`}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-700">核心稳定性</span>
+                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.coreStability)}`}>
+                        {analysis.muscleFatigueAnalysis.coreStability}/100
+                      </span>
+                    </div>
+                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analysis.muscleFatigueAnalysis.coreStability}%` }}
+                        transition={{ duration: 0.8, delay: 0.9 }}
+                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.coreStability)}`}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 分析说明 */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">📊 分析解读</h4>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{analysis.muscleFatigueAnalysis.analysis}</p>
+                </div>
+              </div>
+            </div>
+          </AnimatedCard>
+        </FadeIn>
+      )}
+
+      {/* 配速曲线图 */}
+      <FadeIn delay={0.6}>
+        <PacingChart runs={analysis.pacingAnalysis.runs} />
       </FadeIn>
 
       {/* 训练建议 */}
-      <FadeIn delay={0.5}>
+      <FadeIn delay={0.7}>
         <AnimatedCard>
           <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
             <div className="flex items-center gap-2 mb-4">
@@ -315,7 +491,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
       </FadeIn>
 
       {/* 分享按钮 */}
-      <FadeIn delay={0.6}>
+      <FadeIn delay={0.8}>
         <motion.button
           onClick={() => alert('分享功能开发中')}
           whileHover={{ scale: 1.02 }}
