@@ -1,8 +1,46 @@
 import { useNavigate } from 'react-router-dom';
-import { Activity, TrendingUp, Dumbbell, ChevronRight, User, Search } from 'lucide-react';
+import { Activity, TrendingUp, Dumbbell, User, Search } from 'lucide-react';
 
 function Home() {
   const navigate = useNavigate();
+  const steps = [
+    {
+      badge: '1️⃣',
+      title: '获取你的成绩',
+      description: '输入姓名，自动从官网抓取所有历史比赛成绩',
+      badgeClass: 'bg-orange-100',
+    },
+    {
+      badge: '2️⃣',
+      title: '发现提升空间',
+      description: 'AI分析找出你的强项和短板，对比历史进步趋势',
+      badgeClass: 'bg-blue-100',
+    },
+    {
+      badge: '3️⃣',
+      title: '执行训练计划',
+      description: '获得针对性的训练建议，突破瓶颈，创造PB',
+      badgeClass: 'bg-green-100',
+    },
+  ];
+
+  const features = [
+    {
+      title: '成绩追踪',
+      description: '所有比赛成绩一目了然，进步曲线清晰可见',
+      Icon: Activity,
+    },
+    {
+      title: '弱点诊断',
+      description: '精准定位最大短板，知道该练什么',
+      Icon: TrendingUp,
+    },
+    {
+      title: '训练计划',
+      description: 'AI生成个性化训练方案，科学提升',
+      Icon: Dumbbell,
+    },
+  ];
 
   return (
     <div>
@@ -45,35 +83,17 @@ function Home() {
         <h3 className="text-2xl font-bold text-center mb-10">三步提升你的HYROX成绩</h3>
         
         <div className="space-y-4">
-          <div className="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4">
-            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl">1️⃣</span>
+          {steps.map((step) => (
+            <div key={step.title} className="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4">
+              <div className={`w-12 h-12 ${step.badgeClass} rounded-full flex items-center justify-center flex-shrink-0`}>
+                <span className="text-2xl">{step.badge}</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-lg font-semibold mb-1">{step.title}</h4>
+                <p className="text-gray-600 text-sm">{step.description}</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h4 className="text-lg font-semibold mb-1">获取你的成绩</h4>
-              <p className="text-gray-600 text-sm">输入姓名，自动从官网抓取所有历史比赛成绩</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl">2️⃣</span>
-            </div>
-            <div className="flex-1">
-              <h4 className="text-lg font-semibold mb-1">发现提升空间</h4>
-              <p className="text-gray-600 text-sm">AI分析找出你的强项和短板，对比历史进步趋势</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl">3️⃣</span>
-            </div>
-            <div className="flex-1">
-              <h4 className="text-lg font-semibold mb-1">执行训练计划</h4>
-              <p className="text-gray-600 text-sm">获得针对性的训练建议，突破瓶颈，创造PB</p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
@@ -83,23 +103,13 @@ function Home() {
           <h3 className="text-2xl font-bold text-center mb-10">你能获得什么？</h3>
           
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-xl text-center">
-              <Activity className="w-10 h-10 text-orange-500 mx-auto mb-3" />
-              <h4 className="font-semibold mb-2">成绩追踪</h4>
-              <p className="text-sm text-gray-600">所有比赛成绩一目了然，进步曲线清晰可见</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl text-center">
-              <TrendingUp className="w-10 h-10 text-orange-500 mx-auto mb-3" />
-              <h4 className="font-semibold mb-2">弱点诊断</h4>
-              <p className="text-sm text-gray-600">精准定位最大短板，知道该练什么</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl text-center">
-              <Dumbbell className="w-10 h-10 text-orange-500 mx-auto mb-3" />
-              <h4 className="font-semibold mb-2">训练计划</h4>
-              <p className="text-sm text-gray-600">AI生成个性化训练方案，科学提升</p>
-            </div>
+            {features.map((feature) => (
+              <div key={feature.title} className="bg-white p-6 rounded-xl text-center">
+                <feature.Icon className="w-10 h-10 text-orange-500 mx-auto mb-3" />
+                <h4 className="font-semibold mb-2">{feature.title}</h4>
+                <p className="text-sm text-gray-600">{feature.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

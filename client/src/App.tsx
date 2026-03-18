@@ -8,6 +8,19 @@ import Analysis from './pages/Analysis';
 import MyResults from './pages/MyResults';
 import Athletes from './pages/Athletes';
 
+type NavItem = {
+  path: string;
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+};
+
+const navItems: NavItem[] = [
+  { path: '/', label: '首页', Icon: Home },
+  { path: '/my-results', label: '我的成绩', Icon: User },
+  { path: '/athletes', label: '运动员', Icon: Users },
+  { path: '/analysis', label: '成绩分析', Icon: BarChart3 },
+];
+
 // Animated page wrapper
 function AnimatedPage({ children }: { children: React.ReactNode }) {
   return (
@@ -55,18 +68,9 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
               </button>
               
               <div className="mt-12 space-y-2">
-                <MobileNavLink to="/" onClick={onClose} icon={<Home className="w-5 h-5" />} ariaLabel="首页">
-                  首页
-                </MobileNavLink>
-                <MobileNavLink to="/my-results" onClick={onClose} icon={<User className="w-5 h-5" />} ariaLabel="我的成绩">
-                  我的成绩
-                </MobileNavLink>
-                <MobileNavLink to="/athletes" onClick={onClose} icon={<Users className="w-5 h-5" />} ariaLabel="运动员管理">
-                  运动员管理
-                </MobileNavLink>
-                <MobileNavLink to="/analysis" onClick={onClose} icon={<BarChart3 className="w-5 h-5" />} ariaLabel="成绩分析">
-                  成绩分析
-                </MobileNavLink>
+                {navItems.map((item) => (
+                  <MobileNavLink key={item.path} item={item} onClick={onClose} />
+                ))}
               </div>
             </div>
           </motion.nav>
@@ -76,36 +80,25 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
   );
 }
 
-function MobileNavLink({ 
-  to, 
-  children, 
-  onClick, 
-  icon,
-  ariaLabel
-}: { 
-  to: string; 
-  children: React.ReactNode; 
-  onClick: () => void;
-  icon: React.ReactNode;
-  ariaLabel: string;
-}) {
+function MobileNavLink({ item, onClick }: { item: NavItem; onClick: () => void }) {
   const location = useLocation();
-  const isActive = location.pathname === to;
+  const isActive = location.pathname === item.path;
+  const Icon = item.Icon;
   
   return (
     <Link
-      to={to}
+      to={item.path}
       onClick={onClick}
       className={`flex items-center gap-3 px-4 py-4 min-h-[44px] rounded-lg transition ${
         isActive 
           ? 'bg-orange-50 text-orange-600 font-medium' 
           : 'text-gray-600 hover:bg-gray-50'
       }`}
-      aria-label={ariaLabel}
+      aria-label={item.label}
       aria-current={isActive ? 'page' : undefined}
     >
-      {icon}
-      {children}
+      <Icon className="w-5 h-5" />
+      {item.label}
     </Link>
   );
 }
@@ -133,22 +126,9 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
         
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex gap-6">
-          <NavLink to="/" isActive={isActive('/')}>
-            <Home className="w-4 h-4" />
-            首页
-          </NavLink>
-          <NavLink to="/my-results" isActive={isActive('/my-results')}>
-            <User className="w-4 h-4" />
-            我的成绩
-          </NavLink>
-          <NavLink to="/athletes" isActive={isActive('/athletes')}>
-            <Users className="w-4 h-4" />
-            运动员
-          </NavLink>
-          <NavLink to="/analysis" isActive={isActive('/analysis')}>
-            <BarChart3 className="w-4 h-4" />
-            成绩分析
-          </NavLink>
+          {navItems.map((item) => (
+            <NavLink key={item.path} item={item} isActive={isActive(item.path)} />
+          ))}
         </nav>
         
         {/* Mobile Menu Button */}
@@ -165,18 +145,12 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   );
 }
 
-function NavLink({ 
-  to, 
-  children, 
-  isActive 
-}: { 
-  to: string; 
-  children: React.ReactNode; 
-  isActive: boolean;
-}) {
+function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
+  const Icon = item.Icon;
+
   return (
     <Link
-      to={to}
+      to={item.path}
       className={`flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg transition ${
         isActive 
           ? 'text-orange-500 font-medium' 
@@ -184,7 +158,8 @@ function NavLink({
       }`}
       aria-current={isActive ? 'page' : undefined}
     >
-      {children}
+      <Icon className="w-4 h-4" />
+      {item.label}
     </Link>
   );
 }
@@ -193,19 +168,12 @@ function NavLink({
 function MobileTabBar() {
   const location = useLocation();
   
-  const tabs = [
-    { path: '/', label: '首页', icon: Home },
-    { path: '/my-results', label: '成绩', icon: User },
-    { path: '/athletes', label: '运动员', icon: Users },
-    { path: '/analysis', label: '分析', icon: BarChart3 },
-  ];
-  
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40 safe-area-bottom" role="navigation" aria-label="底部导航">
       <div className="flex justify-around items-center h-16">
-        {tabs.map((tab) => {
+        {navItems.map((tab) => {
           const isActive = location.pathname === tab.path;
-          const Icon = tab.icon;
+          const Icon = tab.Icon;
           
           return (
             <Link

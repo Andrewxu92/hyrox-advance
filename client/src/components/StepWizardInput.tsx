@@ -116,9 +116,10 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
   };
 
   const formatSecondsToTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleSplitChange = (key: string, value: string) => {
@@ -287,7 +288,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
       case 1:
         return (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">输入前四轮1km跑步用时（格式：分:秒）</p>
+            <p className="text-sm text-gray-500">输入前四轮1km跑步用时（格式：时:分:秒）</p>
             <div className="grid grid-cols-2 gap-4">
               {['run1', 'run2', 'run3', 'run4'].map((run, idx) => (
                 <div key={run}>
@@ -310,7 +311,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
       case 2:
         return (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">输入后四轮1km跑步用时（格式：分:秒）</p>
+            <p className="text-sm text-gray-500">输入后四轮1km跑步用时（格式：时:分:秒）</p>
             <div className="grid grid-cols-2 gap-4">
               {['run5', 'run6', 'run7', 'run8'].map((run, idx) => (
                 <div key={run}>
@@ -333,7 +334,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
       case 3:
         return (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">输入各站点用时（格式：分:秒）</p>
+            <p className="text-sm text-gray-500">输入各站点用时（格式：时:分:秒）</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {stations.map((station) => (
                 <div key={station.key}>

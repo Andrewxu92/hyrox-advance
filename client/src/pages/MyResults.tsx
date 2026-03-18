@@ -130,11 +130,7 @@ function MyResults() {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.round(seconds % 60);
-    
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const parseTimeToSeconds = (timeStr: string): number => {
@@ -405,7 +401,7 @@ function MyResults() {
                               输入跑步分段数据
                             </h3>
                             <p className="text-sm text-gray-500 mb-4">
-                              请输入 8 段跑步时间（格式：分:秒）
+                              请输入 8 段跑步时间（格式：时:分:秒）
                             </p>
                             <div className="grid grid-cols-4 gap-2 mb-4">
                               {[1,2,3,4,5,6,7,8].map(i => (
