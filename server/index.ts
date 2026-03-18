@@ -10,10 +10,13 @@ import { initializeDatabase, closeDatabase } from './db/index.js';
 
 // Import routes
 import analysisRoutes from './routes/analysis.js';
+import analysisDbRoutes from './routes/analysis-db.js';
 import trainingRoutes from './routes/training.js';
 import scraperRoutes from './routes/scraper.js';
 import athletesRoutes from './routes/athletes.js';
 import resultsRoutes from './routes/results.js';
+import historyRoutes from './routes/history.js';
+import exportRoutes from './routes/export.js';
 
 // Load environment variables
 dotenv.config();
@@ -48,8 +51,11 @@ app.get('/api/health', (req, res) => {
 app.use('/api/athletes', athletesRoutes);
 app.use('/api/results', resultsRoutes);
 app.use('/api/analysis', analysisRoutes);
+app.use('/api/analysis-db', analysisDbRoutes);  // Analysis with DB persistence
 app.use('/api/training', trainingRoutes);
 app.use('/api/scrape', scraperRoutes);
+app.use('/api/history', historyRoutes);  // Historical data queries
+app.use('/api/export', exportRoutes);  // Data export
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -88,7 +94,14 @@ async function startServer() {
       console.log(`   - GET/POST/DELETE /api/results`);
       console.log(`   - GET /api/results/athlete/:id/compare`);
       console.log(`   - POST /api/analysis`);
+      console.log(`   - POST /api/analysis-db (with DB persistence)`);
+      console.log(`   - GET  /api/analysis-db/reports`);
       console.log(`   - POST /api/training`);
+      console.log(`   - GET  /api/history/athletes/:id/performance`);
+      console.log(`   - GET  /api/history/athletes/:id/analysis`);
+      console.log(`   - GET  /api/history/statistics`);
+      console.log(`   - GET  /api/export/json`);
+      console.log(`   - GET  /api/export/csv`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

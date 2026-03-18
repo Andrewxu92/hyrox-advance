@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResultInput from '../components/ResultInput';
+import StepWizardInput from '../components/StepWizardInput';
 import AnalysisReport from '../components/AnalysisReport';
 import TrainingPlan from '../components/TrainingPlan';
 import RadarChart from '../components/RadarChart';
 import { FadeIn, PageTransition } from '../components/ui/Animations';
 import { ToastContainer, useToast } from '../components/ui/Toast';
-import { Activity, BarChart3, Target, Dumbbell } from 'lucide-react';
+import { Activity, BarChart3, Target, Dumbbell, Zap, ListTodo } from 'lucide-react';
 
 interface AnalysisData {
   level: 'elite' | 'intermediate' | 'beginner';
@@ -48,16 +49,18 @@ interface AnalysisData {
   predictedImprovement: string;
 }
 
+type InputMode = 'quick' | 'detailed';
+
 function Analysis() {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [showTraining, setShowTraining] = useState(false);
   const [activeTab, setActiveTab] = useState<'report' | 'chart'>('report');
+  const [inputMode, setInputMode] = useState<InputMode>('quick');
   const { toasts, removeToast, success } = useToast();
 
   const handleAnalysis = (data: AnalysisData) => {
     setAnalysis(data);
     success('分析完成！', '您的个性化成绩报告已生成');
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -89,10 +92,64 @@ function Analysis() {
                   transition={{ delay: 0.1 }}
                   className="text-gray-600 text-sm sm:text-base"
                 >
-                  输入 8 轮跑步和 8 个站点的用时，AI 将为你生成专业分析
+                  选择输入方式，AI 将为你生成专业分析
                 </motion.p>
               </div>
-              <ResultInput onAnalysis={handleAnalysis} />
+
+              {/* Input Mode Toggle */}
+              <FadeIn delay={0.1}>
+                <div className="flex gap-2 mb-6 max-w-md mx-auto" role="group" aria-label="输入模式选择">
+                  <button
+                    onClick={() => setInputMode('quick')}
+                    className={`flex-1 py-3 px-4 min-h-[44px] rounded-xl font-medium transition-all duration-300 ${
+                      inputMode === 'quick' 
+                        ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg scale-105' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    aria-pressed={inputMode === 'quick'}
+                  >
+                    <Zap className="w-4 h-4 inline mr-1" aria-hidden="true" />
+                    快速估算
+                  </button>
+                  <button
+                    onClick={() => setInputMode('detailed')}
+                    className={`flex-1 py-3 px-4 min-h-[44px] rounded-xl font-medium transition-all duration-300 ${
+                      inputMode === 'detailed' 
+                        ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg scale-105' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                    aria-pressed={inputMode === 'detailed'}
+                  >
+                    <ListTodo className="w-4 h-4 inline mr-1" aria-hidden="true" />
+                    详细输入
+                  </button>
+                </div>
+              </FadeIn>
+
+              {/* Input Component */}
+              <AnimatePresence mode="wait">
+                {inputMode === 'quick' ? (
+                  <motion.div
+                    key="quick"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ResultInput onAnalysis={handleAnalysis} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="detailed"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <StepWizardInput onAnalysis={handleAnalysis} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </PageTransition>
         ) : (
