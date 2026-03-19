@@ -7,7 +7,7 @@ import { calculateTotalTime, formatTime, determineLevel, getBenchmarks, STATION_
 import { generateAdvancedAnalysis } from '../lib/advanced-analysis.js';
 import { getDatabase } from '../db/index.js';
 import { analysisReports, results, athletes, type NewAnalysisReport } from '../db/schema.js';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 
 const router = Router();
 
@@ -113,7 +113,7 @@ router.post('/', async (req, res) => {
           pacingAnalysis: combinedAnalysis.pacingAnalysis ? JSON.stringify(combinedAnalysis.pacingAnalysis) : null,
           fitnessProfile: combinedAnalysis.fitnessProfile ? JSON.stringify(combinedAnalysis.fitnessProfile) : null,
           recommendations: combinedAnalysis.recommendations ? JSON.stringify(combinedAnalysis.recommendations) : null,
-          aiSummary: combinedAnalysis.summary || null,
+          aiSummary: combinedAnalysis.aiSummary || null,
           createdAt: new Date().toISOString(),
         };
 
@@ -259,7 +259,16 @@ router.get('/reports', async (req, res) => {
     const db = getDatabase();
     const { athleteId, resultId, limit = 50 } = req.query;
 
-    let query = db.select({
+    // Build conditions
+    const conditions: any[] = [];
+    if (athleteId) {
+      conditions.push(eq(analysisReports.athleteId, athleteId as string));
+    }
+    if (resultId) {
+      conditions.push(eq(analysisReports.resultId, resultId as string));
+    }
+
+    const reports = await db.select({
       analysis: analysisReports,
       athlete: athletes,
       result: results,
@@ -267,17 +276,9 @@ router.get('/reports', async (req, res) => {
     .from(analysisReports)
     .leftJoin(athletes, eq(analysisReports.athleteId, athletes.id))
     .leftJoin(results, eq(analysisReports.resultId, results.id))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(analysisReports.createdAt))
     .limit(Number(limit));
-
-    if (athleteId) {
-      query = query.where(eq(analysisReports.athleteId, athleteId as string));
-    }
-    if (resultId) {
-      query = query.where(eq(analysisReports.resultId, resultId as string));
-    }
-
-    const reports = await query;
 
     // Parse JSON fields
     const parsedReports = reports.map(r => ({

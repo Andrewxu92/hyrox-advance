@@ -3,7 +3,7 @@
 
 import { Router } from 'express';
 import { eq, desc, asc, and, gte, lte } from 'drizzle-orm';
-import { getDatabase, initializeDatabase } from '../db/index.js';
+import { getDatabase } from '../db/index.js';
 import { athletes, results, analysisReports, type NewAthlete, type NewResult } from '../db/schema.js';
 import { formatTime, calculateTotalTime } from '../lib/hyrox-data.js';
 
@@ -19,7 +19,6 @@ function generateId(): string {
 // ============================================
 router.get('/', async (req, res) => {
   try {
-    await initializeDatabase();
     const db = getDatabase();
     
     const athleteList = await db.select().from(athletes).orderBy(desc(athletes.createdAt));
@@ -42,7 +41,6 @@ router.get('/', async (req, res) => {
 // ============================================
 router.get('/:id', async (req, res) => {
   try {
-    await initializeDatabase();
     const db = getDatabase();
     
     const athleteList = await db.select().from(athletes).where(eq(athletes.id, req.params.id));
@@ -86,7 +84,7 @@ router.get('/:id', async (req, res) => {
 // ============================================
 router.post('/', async (req, res) => {
   try {
-    await initializeDatabase();
+    
     const db = getDatabase();
     
     const { name, email, gender, age, weight, height, experienceLevel, targetTime } = req.body;
@@ -145,7 +143,7 @@ router.post('/', async (req, res) => {
 // ============================================
 router.put('/:id', async (req, res) => {
   try {
-    await initializeDatabase();
+    
     const db = getDatabase();
     
     const { name, email, age, weight, height, experienceLevel, targetTime } = req.body;
@@ -191,7 +189,7 @@ router.put('/:id', async (req, res) => {
 // ============================================
 router.delete('/:id', async (req, res) => {
   try {
-    await initializeDatabase();
+    
     const db = getDatabase();
     
     // 检查运动员是否存在

@@ -33,7 +33,7 @@ export default function AthleteSelector({
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${API_URL}/api/athletes`);
       const data = await res.json();
 

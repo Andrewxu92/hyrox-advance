@@ -32,7 +32,7 @@ export default function AthletesPage() {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${API_URL}/api/athletes`);
       const data = await res.json();
 
@@ -59,7 +59,7 @@ export default function AthletesPage() {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const method = athlete.id ? 'PUT' : 'POST';
       const url = athlete.id 
         ? `${API_URL}/api/athletes/${athlete.id}`
@@ -95,7 +95,7 @@ export default function AthletesPage() {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const res = await fetch(`${API_URL}/api/athletes/${id}`, { method: 'DELETE' });
 
       const data = await res.json();

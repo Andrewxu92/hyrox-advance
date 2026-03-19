@@ -16,21 +16,20 @@ export async function getAthletePerformanceHistory(athleteId: string, options: {
   const db = getDatabase();
   const { startDate, endDate, limit = 50 } = options;
 
-  let query = db.select().from(results)
-    .where(eq(results.athleteId, athleteId))
-    .orderBy(asc(results.raceDate));
-
+  // Build conditions array
+  const conditions: any[] = [eq(results.athleteId, athleteId)];
+  
   if (startDate) {
-    query = query.where(gte(results.raceDate, startDate));
+    conditions.push(gte(results.raceDate, startDate));
   }
   if (endDate) {
-    query = query.where(lte(results.raceDate, endDate));
-  }
-  if (limit) {
-    query = query.limit(limit);
+    conditions.push(lte(results.raceDate, endDate));
   }
 
-  const resultList = await query;
+  const resultList = await db.select().from(results)
+    .where(and(...conditions))
+    .orderBy(asc(results.raceDate))
+    .limit(limit);
 
   // Calculate trends
   const trends = calculatePerformanceTrends(resultList);
@@ -53,7 +52,7 @@ export async function getAthleteAnalysisHistory(athleteId: string, options: {
   const db = getDatabase();
   const { limit = 10, includeDetails = false } = options;
 
-  const query = db.select({
+  const analyses = await db.select({
     analysis: analysisReports,
     result: results,
   })
@@ -62,8 +61,6 @@ export async function getAthleteAnalysisHistory(athleteId: string, options: {
   .where(eq(analysisReports.athleteId, athleteId))
   .orderBy(desc(analysisReports.createdAt))
   .limit(limit);
-
-  const analyses = await query;
 
   // Parse JSON fields
   const parsedAnalyses = analyses.map(a => ({
@@ -107,18 +104,17 @@ export async function getAthleteTrainingHistory(athleteId: string, options: {
   const db = getDatabase();
   const { status, limit = 10 } = options;
 
-  let query = db.select().from(trainingPlans)
-    .where(eq(trainingPlans.athleteId, athleteId))
-    .orderBy(desc(trainingPlans.createdAt));
-
+  // Build conditions
+  const conditions: any[] = [eq(trainingPlans.athleteId, athleteId)];
+  
   if (status) {
-    query = query.where(eq(trainingPlans.status, status));
-  }
-  if (limit) {
-    query = query.limit(limit);
+    conditions.push(eq(trainingPlans.status, status));
   }
 
-  const plans = await query;
+  const plans = await db.select().from(trainingPlans)
+    .where(and(...conditions))
+    .orderBy(desc(trainingPlans.createdAt))
+    .limit(limit);
 
   // Parse weeks JSON
   const parsedPlans = plans.map(p => ({
@@ -228,10 +224,11 @@ export async function getGlobalStatistics() {
 export async function getStationPerformanceComparison(athleteId: string, resultIds: string[]) {
   const db = getDatabase();
 
+  // Use sql template for IN clause
   const resultList = await db.select().from(results)
     .where(and(
       eq(results.athleteId, athleteId),
-      sql`${results.id} IN (${sql.join(resultIds.map(id => sql.literal(id)))})`
+      sql`${results.id} IN (${sql.raw(resultIds.map(id => `'${id}'`).join(','))})`
     ))
     .orderBy(asc(results.raceDate));
 

@@ -3,7 +3,7 @@
 
 import { Router } from 'express';
 import { eq, desc, asc, and, gte, lte, sql } from 'drizzle-orm';
-import { getDatabase, initializeDatabase } from '../db/index.js';
+import { getDatabase } from '../db/index.js';
 import { results, athletes, analysisReports, type NewResult } from '../db/schema.js';
 import { formatTime, calculateTotalTime, STATION_NAMES, RUN_NAMES } from '../lib/hyrox-data.js';
 
@@ -19,7 +19,7 @@ function generateId(): string {
 // ============================================
 router.get('/', async (req, res) => {
   try {
-    await initializeDatabase();
+    
     const db = getDatabase();
     
     const { athleteId, limit = 50 } = req.query;
@@ -52,7 +52,7 @@ router.get('/', async (req, res) => {
 // ============================================
 router.get('/:id', async (req, res) => {
   try {
-    await initializeDatabase();
+    
     const db = getDatabase();
     
     const resultList = await db.select({
@@ -103,7 +103,7 @@ router.get('/:id', async (req, res) => {
 // ============================================
 router.post('/', async (req, res) => {
   try {
-    await initializeDatabase();
+    
     const db = getDatabase();
     
     const {
@@ -195,7 +195,7 @@ router.post('/', async (req, res) => {
 // ============================================
 router.delete('/:id', async (req, res) => {
   try {
-    await initializeDatabase();
+    
     const db = getDatabase();
     
     // 检查成绩是否存在
@@ -231,7 +231,7 @@ router.delete('/:id', async (req, res) => {
 // ============================================
 router.get('/athlete/:athleteId/compare', async (req, res) => {
   try {
-    await initializeDatabase();
+    
     const db = getDatabase();
     
     const { resultIds } = req.query;

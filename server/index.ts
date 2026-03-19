@@ -2,6 +2,9 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 // Import database
 import { initializeDatabase, closeDatabase } from './db/index.js';
@@ -19,17 +22,20 @@ import exportRoutes from './routes/export.js';
 // Load environment variables
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-domain.com' 
+    ? true // Allow all origins in production
     : true, // 开发环境允许所有来源
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
 // Health check
@@ -80,6 +86,34 @@ async function startServer() {
     // Initialize database
     await initializeDatabase();
     console.log('✅ Database initialized');
+    
+    // Check and serve static files
+    const clientDistPath = path.join(__dirname, '../client/dist');
+    console.log('📁 __dirname:', __dirname);
+    console.log('📁 Looking for client at:', clientDistPath);
+    console.log('📁 Client dist exists:', fs.existsSync(clientDistPath));
+    
+    // Serve static files
+    if (fs.existsSync(clientDistPath)) {
+      app.use(express.static(clientDistPath, {
+        maxAge: '0',
+        etag: true
+      }));
+      
+      // SPA fallback - serve index.html for all non-API routes
+      app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api')) {
+          return next();
+        }
+        const indexPath = path.join(clientDistPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(404).json({ error: 'Frontend not built' });
+        }
+      });
+      console.log('✅ Static files serving enabled');
+    }
     
     app.listen(PORT, () => {
       console.log(`🏃 HYROX Advance server running on port ${PORT}`);

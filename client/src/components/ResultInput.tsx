@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Loader2, Search, Zap, User, ChevronRight, History, Trophy, TrendingUp, AlertCircle, Trash2, RefreshCw } from 'lucide-react';
+import { Loader2, Search, Zap, User, ChevronRight, History, Trophy, TrendingUp, AlertCircle, Trash2, RefreshCw, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LoadingOverlay, LoadingButton, AnalysisLoadingOverlay } from './ui/Loading';
+import { LoadingOverlay, LoadingButton } from './ui/Loading';
 import { FadeIn, AnimatedCard } from './ui/Animations';
 import { useFormAutoSave } from '../hooks/useLocalStorage';
 import { useApiHandler, withRetry } from '../hooks/useApiHandler';
+import TimeSelector from './ui/TimeSelector';
 
 interface AthleteInfo {
   name: string;
@@ -14,8 +15,8 @@ interface AthleteInfo {
 }
 
 interface QuickInput {
-  totalTime: string;
-  run1: string;
+  totalTime: number;
+  run1: number;
   weakestStation: string;
   strongestStation: string;
 }
@@ -34,7 +35,6 @@ const stations = [
   { key: 'wallBalls', label: '药球', icon: '🏐', difficulty: '混合' },
 ];
 
-// 本地存储键
 const STORAGE_KEY = 'hyrox_history';
 const FORM_DATA_KEY = 'hyrox_form_data';
 
@@ -45,11 +45,13 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
   const [searching, setSearching] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingSubMessage, setLoadingSubMessage] = useState('');
   
-  // 快速输入
+  // 快速输入 - 使用秒数存储
   const [quickInput, setQuickInput] = useState<QuickInput>({
-    totalTime: '',
-    run1: '',
+    totalTime: 0,
+    run1: 0,
     weakestStation: '',
     strongestStation: ''
   });
@@ -65,7 +67,6 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
   // API 处理
   const { isLoading: isAnalyzing, error: apiError, execute, clearError } = useApiHandler();
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
-  const [analysisStep, setAnalysisStep] = useState(1);
 
   // 自动保存表单数据
   const formData = { mode, quickInput, athleteInfo };
@@ -78,14 +79,12 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
 
   // 加载历史记录和保存的表单数据
   useEffect(() => {
-    // 加载历史记录
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         setHistory(parsed.slice(0, 5));
         
-        // 自动填充上次的选手信息
         if (parsed.length > 0) {
           const last = parsed[0];
           setAthleteInfo(prev => ({
@@ -101,7 +100,6 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
       }
     }
 
-    // 恢复保存的表单数据
     const savedForm = localStorage.getItem(FORM_DATA_KEY);
     if (savedForm) {
       try {
@@ -126,7 +124,6 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     }
   }, []);
 
-  // 保存到历史记录
   const saveToHistory = useCallback((data: any) => {
     const newRecord = {
       timestamp: Date.now(),
@@ -139,15 +136,14 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     });
   }, []);
 
-  // 清除所有数据
   const handleClearData = useCallback(() => {
     if (confirm('确定要清除所有保存的数据吗？此操作不可恢复。')) {
       clearSavedData();
       localStorage.removeItem(STORAGE_KEY);
       setHistory([]);
       setQuickInput({
-        totalTime: '',
-        run1: '',
+        totalTime: 0,
+        run1: 0,
         weakestStation: '',
         strongestStation: ''
       });
@@ -161,23 +157,17 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     }
   }, [clearSavedData]);
 
-  // 搜索选手
   const handleSearch = useCallback(async () => {
-    if (!searchQuery.trim()) {
-      return;
-    }
-
+    if (!searchQuery.trim()) return;
     setSearching(true);
     setSearchResults([]);
     clearError();
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const API_URL = import.meta.env.VITE_API_URL || '';
       const response = await fetch(`${API_URL}/api/scrape/search?q=${encodeURIComponent(searchQuery)}`);
       
-      if (!response.ok) {
-        throw new Error('搜索失败');
-      }
+      if (!response.ok) throw new Error('搜索失败');
 
       const result = await response.json();
       
@@ -187,14 +177,12 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
         throw new Error('未找到该选手，请尝试手动输入或使用快速估算模式');
       }
     } catch (err: any) {
-      // Error is handled by the component
       console.error('Search error:', err);
     } finally {
       setSearching(false);
     }
   }, [searchQuery, clearError]);
 
-  // 选择搜索结果并抓取
   const handleSelectResult = useCallback(async (result: any) => {
     setLoadingMessage('正在获取成绩数据...');
     setLoadingSubMessage('从 hyresult.com 抓取您的比赛记录');
@@ -202,7 +190,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
 
     try {
       await execute(async () => {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+        const API_URL = import.meta.env.VITE_API_URL || '';
         const response = await fetch(`${API_URL}/api/scrape`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -212,9 +200,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
           })
         });
 
-        if (!response.ok) {
-          throw new Error('抓取失败');
-        }
+        if (!response.ok) throw new Error('抓取失败');
 
         const data = await response.json();
         
@@ -238,11 +224,8 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     }
   }, [execute, onAnalysis, saveToHistory]);
 
-  // 快速估算分析
   const handleQuickAnalysis = useCallback(async () => {
-    if (!quickInput.totalTime) {
-      return;
-    }
+    if (quickInput.totalTime === 0) return;
 
     setLoadingMessage('AI正在分析你的成绩...');
     setLoadingSubMessage('生成个性化训练建议和进步空间预测');
@@ -251,7 +234,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     try {
       await execute(async () => {
         const estimatedSplits = estimateSplits(quickInput);
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+        const API_URL = import.meta.env.VITE_API_URL || '';
         
         const response = await withRetry(async () => {
           const res = await fetch(`${API_URL}/api/analysis`, {
@@ -281,7 +264,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
           saveToHistory({
             type: 'quick',
             athleteInfo,
-            totalTime: quickInput.totalTime
+            totalTime: formatTime(quickInput.totalTime)
           });
           
           onAnalysis({ ...result.data, isEstimated: true });
@@ -294,14 +277,13 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     }
   }, [execute, quickInput, athleteInfo, onAnalysis, saveToHistory]);
 
-  // 从历史记录加载
   const loadFromHistory = useCallback((record: any) => {
     if (record.type === 'scrape' && record.result) {
       onAnalysis(record.result);
     } else {
       setQuickInput({
-        totalTime: record.totalTime || '',
-        run1: '',
+        totalTime: parseTimeToSeconds(record.totalTime) || 0,
+        run1: 0,
         weakestStation: '',
         strongestStation: ''
       });
@@ -313,10 +295,9 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     setShowHistory(false);
   }, [onAnalysis]);
 
-  // 估算完整数据
   const estimateSplits = (quick: QuickInput): Record<string, number> => {
-    const totalSeconds = parseTimeToSeconds(quick.totalTime);
-    const run1Seconds = quick.run1 ? parseTimeToSeconds(quick.run1) : 0;
+    const totalSeconds = quick.totalTime;
+    const run1Seconds = quick.run1;
     
     const estimated: Record<string, number> = {};
     
@@ -343,6 +324,13 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
     });
     
     return estimated;
+  };
+
+  const formatTime = (seconds: number): string => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const parseTimeToSeconds = (timeStr: string): number => {
@@ -374,26 +362,26 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
         <div className="flex gap-2 mb-6" role="group" aria-label="输入模式选择">
           <button
             onClick={() => setMode('quick')}
-            className={`flex-1 py-3 px-4 min-h-[44px] rounded-xl font-medium transition-all duration-300 ${
+            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
               mode === 'quick' 
-                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg scale-105' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg' 
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
             aria-pressed={mode === 'quick'}
           >
-            <Zap className="w-4 h-4 inline mr-1" aria-hidden="true" />
+            <Zap className="w-4 h-4" />
             快速估算
           </button>
           <button
             onClick={() => setMode('scrape')}
-            className={`flex-1 py-3 px-4 min-h-[44px] rounded-xl font-medium transition-all duration-300 ${
+            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
               mode === 'scrape' 
-                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg scale-105' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg' 
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
             aria-pressed={mode === 'scrape'}
           >
-            <Search className="w-4 h-4 inline mr-1" aria-hidden="true" />
+            <Search className="w-4 h-4" />
             官网抓取
           </button>
         </div>
@@ -405,18 +393,18 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="flex-1 py-3 min-h-[44px] text-sm text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition"
+              className="flex-1 py-3 text-sm text-orange-400 bg-orange-500/10 rounded-lg hover:bg-orange-500/20 transition"
               aria-expanded={showHistory}
             >
-              <History className="w-4 h-4 inline mr-1" aria-hidden="true" />
+              <History className="w-4 h-4 inline mr-1" />
               {showHistory ? '隐藏历史记录' : `查看历史记录 (${history.length})`}
             </button>
             <button
               onClick={handleClearData}
-              className="px-4 py-3 min-h-[44px] text-sm text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition"
+              className="px-4 py-3 text-sm text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition"
               aria-label="清除所有数据"
             >
-              <Trash2 className="w-4 h-4" aria-hidden="true" />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </FadeIn>
@@ -427,7 +415,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 text-xs text-gray-400 text-center"
+          className="mb-4 text-xs text-gray-500 text-center"
         >
           {isSaving ? '保存中...' : `上次保存: ${lastSaved.toLocaleTimeString()}`}
         </motion.div>
@@ -440,9 +428,9 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white rounded-xl shadow-lg p-4 mb-4 overflow-hidden"
+            className="sport-card p-4 mb-4 overflow-hidden"
           >
-            <h4 className="text-sm font-medium text-gray-500 mb-3">最近分析记录</h4>
+            <h4 className="text-sm font-medium text-gray-400 mb-3">最近分析记录</h4>
             <div className="space-y-2">
               {history.map((record, idx) => (
                 <motion.button
@@ -451,14 +439,14 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => loadFromHistory(record)}
-                  className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-orange-50 transition"
+                  className="w-full text-left p-3 bg-gray-800/50 rounded-lg hover:bg-orange-500/10 transition"
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <span className="font-medium">
+                      <span className="font-medium text-white">
                         {record.athleteInfo?.name || '未命名'}
                       </span>
-                      <span className="text-xs text-gray-400 ml-2">
+                      <span className="text-xs text-gray-500 ml-2">
                         {record.type === 'scrape' ? '官网抓取' : '快速估算'}
                       </span>
                     </div>
@@ -467,7 +455,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                     </span>
                   </div>
                   {record.totalTime && (
-                    <div className="text-sm text-orange-600 mt-1">
+                    <div className="text-sm text-orange-400 mt-1">
                       总成绩: {record.totalTime}
                     </div>
                   )}
@@ -487,17 +475,17 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
             exit={{ opacity: 0, y: -20 }}
             className="mb-4 flex flex-col gap-2"
           >
-            <div className="flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">
+            <div className="flex items-center gap-2 text-red-400 bg-red-500/10 px-4 py-3 rounded-lg text-sm border border-red-500/20">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <div className="flex-1">
                 <div className="font-medium">{apiError.title}</div>
-                <div className="text-red-500">{apiError.message}</div>
+                <div className="text-red-300/80">{apiError.message}</div>
               </div>
             </div>
             {apiError.retryable && (
               <button
                 onClick={clearError}
-                className="flex items-center justify-center gap-2 text-sm text-orange-600 hover:text-orange-700 py-2"
+                className="flex items-center justify-center gap-2 text-sm text-orange-400 hover:text-orange-300 py-2"
               >
                 <RefreshCw className="w-4 h-4" />
                 重试
@@ -510,52 +498,48 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
       {/* 快速估算模式 */}
       {mode === 'quick' && (
         <AnimatedCard delay={0.1}>
-          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-            {/* 总成绩 */}
-            <div className="mb-5">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="sport-card p-6">
+            {/* 总成绩 - 使用时间选择器 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                <Timer className="w-4 h-4 text-orange-500" />
                 你的HYROX总成绩 *
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={quickInput.totalTime}
-                  onChange={(e) => setQuickInput({ ...quickInput, totalTime: e.target.value })}
-                  placeholder="1:15:30"
-                  className="w-full px-4 py-4 min-h-[56px] text-xl sm:text-2xl font-bold text-center border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors"
-                  aria-label="HYROX 总成绩"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm hidden sm:block">
-                  时:分:秒
-                </span>
-              </div>
+              <TimeSelector
+                value={quickInput.totalTime}
+                onChange={(seconds) => setQuickInput({ ...quickInput, totalTime: seconds })}
+                maxHours={3}
+                size="lg"
+                showLabels={true}
+              />
             </div>
 
             {/* 第一段跑步（可选） */}
-            <div className="mb-5">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                第一段1km跑步 <span className="text-gray-400">(选填)</span>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-300 mb-3">
+                第一段1km跑步 <span className="text-gray-500">(选填)</span>
               </label>
-              <input
-                type="text"
+              <TimeSelector
                 value={quickInput.run1}
-                onChange={(e) => setQuickInput({ ...quickInput, run1: e.target.value })}
-                placeholder="4:30"
-                className="w-full px-4 py-3 text-center border-2 border-gray-200 rounded-xl focus:border-orange-500 transition-colors"
+                onChange={(seconds) => setQuickInput({ ...quickInput, run1: seconds })}
+                maxHours={0}
+                maxMinutes={15}
+                size="md"
+                showLabels={true}
               />
-              <p className="text-xs text-gray-400 mt-1">填了会让估算更准确</p>
+              <p className="text-xs text-gray-500 mt-2">填了会让估算更准确</p>
             </div>
 
             {/* 强弱项 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   你的强项
                 </label>
                 <select
                   value={quickInput.strongestStation}
                   onChange={(e) => setQuickInput({ ...quickInput, strongestStation: e.target.value })}
-                  className="w-full px-3 py-3 border-2 border-gray-200 rounded-xl bg-white focus:border-orange-500 transition-colors"
+                  className="w-full px-3 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-orange-500 transition-colors text-white"
                 >
                   <option value="">选择...</option>
                   {stations.map(s => (
@@ -564,13 +548,13 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   你的弱项
                 </label>
                 <select
                   value={quickInput.weakestStation}
                   onChange={(e) => setQuickInput({ ...quickInput, weakestStation: e.target.value })}
-                  className="w-full px-3 py-3 border-2 border-gray-200 rounded-xl bg-white focus:border-orange-500 transition-colors"
+                  className="w-full px-3 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-orange-500 transition-colors text-white"
                 >
                   <option value="">选择...</option>
                   {stations.map(s => (
@@ -581,36 +565,36 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
             </div>
 
             {/* 基本信息 */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 p-4 bg-gray-50 rounded-xl">
+            <div className="grid grid-cols-3 gap-3 mb-6 p-4 bg-gray-800/50 rounded-xl">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">性别 *</label>
+                <label className="block text-xs text-gray-400 mb-1">性别 *</label>
                 <select
                   value={athleteInfo.gender}
                   onChange={(e) => setAthleteInfo({ ...athleteInfo, gender: e.target.value as 'male' | 'female' })}
-                  className="w-full px-2 py-2 border rounded-lg text-sm bg-white focus:border-orange-500 transition-colors"
+                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-orange-500"
                 >
                   <option value="male">男</option>
                   <option value="female">女</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">年龄</label>
+                <label className="block text-xs text-gray-400 mb-1">年龄</label>
                 <input
                   type="text"
                   value={athleteInfo.age}
                   onChange={(e) => setAthleteInfo({ ...athleteInfo, age: e.target.value })}
                   placeholder="30"
-                  className="w-full px-2 py-2 border rounded-lg text-sm focus:border-orange-500 transition-colors"
+                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-orange-500"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">体重kg</label>
+                <label className="block text-xs text-gray-400 mb-1">体重kg</label>
                 <input
                   type="text"
                   value={athleteInfo.weight}
                   onChange={(e) => setAthleteInfo({ ...athleteInfo, weight: e.target.value })}
                   placeholder="70"
-                  className="w-full px-2 py-2 border rounded-lg text-sm focus:border-orange-500 transition-colors"
+                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-orange-500"
                 />
               </div>
             </div>
@@ -620,8 +604,8 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
               onClick={handleQuickAnalysis}
               loading={isAnalyzing}
               loadingText="AI分析中..."
-              disabled={!quickInput.totalTime}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[56px] active:scale-[0.98] touch-manipulation"
+              disabled={quickInput.totalTime === 0}
+              className="w-full btn-primary py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <TrendingUp className="w-5 h-5" />
               立即分析
@@ -633,9 +617,9 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
       {/* 官网抓取模式 */}
       {mode === 'scrape' && (
         <AnimatedCard delay={0.1}>
-          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+          <div className="sport-card p-6">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 输入你的姓名
               </label>
               <div className="flex gap-2">
@@ -644,17 +628,17 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="姓名或拼音"
-                  className="flex-1 px-4 py-3 min-h-[44px] border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-colors"
+                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-orange-500 text-white"
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   aria-label="搜索选手姓名"
                 />
                 <button
                   onClick={handleSearch}
                   disabled={searching || !searchQuery.trim()}
-                  className="bg-orange-500 text-white px-4 sm:px-5 py-3 min-h-[44px] min-w-[44px] rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 active:scale-95 touch-manipulation"
+                  className="btn-primary px-4 py-3 rounded-xl font-medium disabled:opacity-50"
                   aria-label="搜索选手"
                 >
-                  {searching ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <Search className="w-5 h-5" aria-hidden="true" />}
+                  {searching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -668,7 +652,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   exit={{ opacity: 0, height: 0 }}
                   className="mb-4 overflow-hidden"
                 >
-                  <p className="text-sm text-gray-500 mb-2">找到 {searchResults.length} 个结果：</p>
+                  <p className="text-sm text-gray-400 mb-2">找到 {searchResults.length} 个结果：</p>
                   <div className="space-y-2">
                     {searchResults.map((result, idx) => (
                       <motion.button
@@ -677,15 +661,14 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
                         onClick={() => handleSelectResult(result)}
-                        className="w-full text-left p-4 min-h-[44px] bg-gray-50 rounded-lg hover:bg-orange-50 transition active:scale-[0.98] touch-manipulation"
-                        aria-label={`选择 ${result.name}${result.location ? ` - ${result.location}` : ''}`}
+                        className="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-orange-500/10 transition"
                       >
                         <div className="flex justify-between items-center">
-                          <span className="font-medium">{result.name}</span>
-                          <ChevronRight className="w-4 h-4 text-gray-400" aria-hidden="true" />
+                          <span className="font-medium text-white">{result.name}</span>
+                          <ChevronRight className="w-4 h-4 text-gray-500" />
                         </div>
                         {result.location && (
-                          <span className="text-sm text-gray-500">{result.location}</span>
+                          <span className="text-sm text-gray-400">{result.location}</span>
                         )}
                       </motion.button>
                     ))}
@@ -695,12 +678,12 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
             </AnimatePresence>
 
             {/* 提示 */}
-            <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-700">
+            <div className="bg-blue-500/10 rounded-lg p-4 text-sm text-blue-400 border border-blue-500/20">
               <p className="flex items-center gap-2">
                 <Trophy className="w-4 h-4" />
                 数据来自 hyresult.com 官网
               </p>
-              <p className="mt-1 text-blue-600">输入你在官网注册的姓名即可自动获取</p>
+              <p className="mt-1 text-blue-300/80">输入你在官网注册的姓名即可自动获取</p>
             </div>
           </div>
         </AnimatedCard>

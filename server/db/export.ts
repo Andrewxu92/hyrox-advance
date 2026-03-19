@@ -49,47 +49,47 @@ export async function exportToJSON(options: {
 
   // Export athletes
   if (includeAthletes) {
-    let athleteQuery = db.select().from(athletes);
     if (athleteId) {
-      athleteQuery = athleteQuery.where(eq(athletes.id, athleteId));
+      exportData.data.athletes = await db.select().from(athletes).where(eq(athletes.id, athleteId));
+    } else {
+      exportData.data.athletes = await db.select().from(athletes);
     }
-    exportData.data.athletes = await athleteQuery;
   }
 
   // Export results
   if (includeResults) {
-    let resultQuery = db.select().from(results);
     if (athleteId) {
-      resultQuery = resultQuery.where(eq(results.athleteId, athleteId));
+      exportData.data.results = await db.select().from(results).where(eq(results.athleteId, athleteId));
+    } else {
+      exportData.data.results = await db.select().from(results);
     }
-    exportData.data.results = await resultQuery;
   }
 
   // Export analysis reports
   if (includeAnalyses) {
-    let analysisQuery = db.select().from(analysisReports);
     if (athleteId) {
-      analysisQuery = analysisQuery.where(eq(analysisReports.athleteId, athleteId));
+      exportData.data.analysisReports = await db.select().from(analysisReports).where(eq(analysisReports.athleteId, athleteId));
+    } else {
+      exportData.data.analysisReports = await db.select().from(analysisReports);
     }
-    exportData.data.analysisReports = await analysisQuery;
   }
 
   // Export training plans
   if (includePlans) {
-    let planQuery = db.select().from(trainingPlans);
     if (athleteId) {
-      planQuery = planQuery.where(eq(trainingPlans.athleteId, athleteId));
+      exportData.data.trainingPlans = await db.select().from(trainingPlans).where(eq(trainingPlans.athleteId, athleteId));
+    } else {
+      exportData.data.trainingPlans = await db.select().from(trainingPlans);
     }
-    exportData.data.trainingPlans = await planQuery;
   }
 
   // Export training logs
   if (includeLogs) {
-    let logQuery = db.select().from(trainingLogs);
     if (athleteId) {
-      logQuery = logQuery.where(eq(trainingLogs.athleteId, athleteId));
+      exportData.data.trainingLogs = await db.select().from(trainingLogs).where(eq(trainingLogs.athleteId, athleteId));
+    } else {
+      exportData.data.trainingLogs = await db.select().from(trainingLogs);
     }
-    exportData.data.trainingLogs = await logQuery;
   }
 
   // Write to file
@@ -145,10 +145,10 @@ export async function exportToCSV(options: {
 
   // Export athletes
   if (tables.includes('athletes')) {
-    let query = db.select().from(athletes);
-    if (athleteId) query = query.where(eq(athletes.id, athleteId));
+    const rows = athleteId 
+      ? await db.select().from(athletes).where(eq(athletes.id, athleteId))
+      : await db.select().from(athletes);
     
-    const rows = await query;
     const headers = ['id', 'name', 'email', 'gender', 'age', 'weight', 'height', 'experienceLevel', 'targetTime', 'createdAt', 'updatedAt'];
     
     const csv = toCSV(rows, headers);
@@ -162,10 +162,10 @@ export async function exportToCSV(options: {
 
   // Export results
   if (tables.includes('results')) {
-    let query = db.select().from(results);
-    if (athleteId) query = query.where(eq(results.athleteId, athleteId));
+    const rows = athleteId 
+      ? await db.select().from(results).where(eq(results.athleteId, athleteId))
+      : await db.select().from(results);
     
-    const rows = await query;
     const headers = [
       'id', 'athleteId', 'raceName', 'raceDate', 'raceLocation', 'division',
       'totalTime', 'overallRank', 'ageGroupRank', 'genderRank',
@@ -185,10 +185,10 @@ export async function exportToCSV(options: {
 
   // Export analysis reports
   if (tables.includes('analysisReports')) {
-    let query = db.select().from(analysisReports);
-    if (athleteId) query = query.where(eq(analysisReports.athleteId, athleteId));
+    const rows = athleteId 
+      ? await db.select().from(analysisReports).where(eq(analysisReports.athleteId, athleteId))
+      : await db.select().from(analysisReports);
     
-    const rows = await query;
     const headers = ['id', 'resultId', 'athleteId', 'overallScore', 'level', 'weaknesses', 'strengths', 'pacingAnalysis', 'fitnessProfile', 'recommendations', 'aiSummary', 'createdAt'];
     
     const csv = toCSV(rows, headers);
@@ -202,10 +202,10 @@ export async function exportToCSV(options: {
 
   // Export training plans
   if (tables.includes('trainingPlans')) {
-    let query = db.select().from(trainingPlans);
-    if (athleteId) query = query.where(eq(trainingPlans.athleteId, athleteId));
+    const rows = athleteId 
+      ? await db.select().from(trainingPlans).where(eq(trainingPlans.athleteId, athleteId))
+      : await db.select().from(trainingPlans);
     
-    const rows = await query;
     const headers = ['id', 'athleteId', 'resultId', 'name', 'duration', 'goal', 'type', 'weeks', 'status', 'startDate', 'createdAt'];
     
     const csv = toCSV(rows, headers);

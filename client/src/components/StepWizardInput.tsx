@@ -5,7 +5,8 @@ import { DataImportExport } from './DataImportExport';
 import { useFormAutoSave } from '../hooks/useLocalStorage';
 import { useApiHandler, withRetry } from '../hooks/useApiHandler';
 import { LoadingOverlay } from './ui/Loading';
-import { AlertCircle, Trash2, RefreshCw, User, Timer, Dumbbell } from 'lucide-react';
+import TimeSelector from './ui/TimeSelector';
+import { AlertCircle, Trash2, RefreshCw, Timer, Dumbbell } from 'lucide-react';
 
 interface AthleteInfo {
   name: string;
@@ -104,17 +105,6 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
     }
   }, [clearSavedData]);
 
-  const parseTimeToSeconds = (timeStr: string): number => {
-    if (!timeStr) return 0;
-    const parts = timeStr.split(':');
-    if (parts.length === 3) {
-      return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
-    } else if (parts.length === 2) {
-      return parseInt(parts[0]) * 60 + parseInt(parts[1]);
-    }
-    return parseInt(timeStr) || 0;
-  };
-
   const formatSecondsToTime = (seconds: number): string => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -122,8 +112,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
     return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleSplitChange = (key: string, value: string) => {
-    const seconds = parseTimeToSeconds(value);
+  const handleSplitChange = (key: string, seconds: number) => {
     setSplits(prev => ({ ...prev, [key]: seconds }));
   };
 
@@ -133,15 +122,15 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
 
   const validateStep = useCallback((step: number): boolean => {
     switch (step) {
-      case 0: // Athlete info
+      case 0:
         return !!athleteInfo.gender;
-      case 1: // Runs 1-4
+      case 1:
         return splits.run1 > 0 && splits.run2 > 0 && splits.run3 > 0 && splits.run4 > 0;
-      case 2: // Runs 5-8
+      case 2:
         return splits.run5 > 0 && splits.run6 > 0 && splits.run7 > 0 && splits.run8 > 0;
-      case 3: // Stations
+      case 3:
         return stations.every(s => splits[s.key] > 0);
-      case 4: // Confirm
+      case 4:
         return true;
       default:
         return true;
@@ -155,7 +144,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
 
     try {
       await execute(async () => {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+        const API_URL = import.meta.env.VITE_API_URL || '';
         
         const response = await withRetry(async () => {
           const res = await fetch(`${API_URL}/api/analysis`, {
@@ -182,7 +171,6 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
         const result = await response.json();
         
         if (result.success) {
-          // Save to history
           const historyKey = 'hyrox_history';
           const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
           history.unshift({
@@ -216,40 +204,40 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
     switch (currentStep) {
       case 0:
         return (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                姓名 <span className="text-gray-400">(选填)</span>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                姓名 <span className="text-gray-500">(选填)</span>
               </label>
               <input
                 type="text"
                 value={athleteInfo.name}
                 onChange={(e) => setAthleteInfo({ ...athleteInfo, name: e.target.value })}
                 placeholder="你的名字"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                className="form-input-dark"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-3">
                 性别 *
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setAthleteInfo({ ...athleteInfo, gender: 'male' })}
-                  className={`py-3 px-4 rounded-xl border-2 transition ${
+                  className={`py-4 px-4 rounded-xl border-2 transition font-medium ${
                     athleteInfo.gender === 'male'
-                      ? 'border-orange-500 bg-orange-50 text-orange-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-orange-500 bg-orange-500/10 text-orange-400'
+                      : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
                   }`}
                 >
                   男
                 </button>
                 <button
                   onClick={() => setAthleteInfo({ ...athleteInfo, gender: 'female' })}
-                  className={`py-3 px-4 rounded-xl border-2 transition ${
+                  className={`py-4 px-4 rounded-xl border-2 transition font-medium ${
                     athleteInfo.gender === 'female'
-                      ? 'border-orange-500 bg-orange-50 text-orange-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-orange-500 bg-orange-500/10 text-orange-400'
+                      : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
                   }`}
                 >
                   女
@@ -258,27 +246,27 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  年龄 <span className="text-gray-400">(选填)</span>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  年龄 <span className="text-gray-500">(选填)</span>
                 </label>
                 <input
                   type="number"
                   value={athleteInfo.age}
                   onChange={(e) => setAthleteInfo({ ...athleteInfo, age: e.target.value })}
                   placeholder="30"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                  className="form-input-dark"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  体重(kg) <span className="text-gray-400">(选填)</span>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  体重(kg) <span className="text-gray-500">(选填)</span>
                 </label>
                 <input
                   type="number"
                   value={athleteInfo.weight}
                   onChange={(e) => setAthleteInfo({ ...athleteInfo, weight: e.target.value })}
                   placeholder="70"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none"
+                  className="form-input-dark"
                 />
               </div>
             </div>
@@ -287,20 +275,21 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
 
       case 1:
         return (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">输入前四轮1km跑步用时（格式：时:分:秒）</p>
+          <div className="space-y-6">
+            <p className="text-sm text-gray-400 mb-4">输入前四轮1km跑步用时</p>
             <div className="grid grid-cols-2 gap-4">
               {['run1', 'run2', 'run3', 'run4'].map((run, idx) => (
-                <div key={run}>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div key={run} className="sport-card p-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-3 text-center">
                     第{idx + 1}轮跑步 *
                   </label>
-                  <input
-                    type="text"
-                    value={splits[run] ? formatSecondsToTime(splits[run]) : ''}
-                    onChange={(e) => handleSplitChange(run, e.target.value)}
-                    placeholder="4:30"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none text-center"
+                  <TimeSelector
+                    value={splits[run]}
+                    onChange={(seconds) => handleSplitChange(run, seconds)}
+                    maxHours={0}
+                    maxMinutes={20}
+                    size="sm"
+                    showLabels={true}
                   />
                 </div>
               ))}
@@ -310,20 +299,21 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
 
       case 2:
         return (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">输入后四轮1km跑步用时（格式：时:分:秒）</p>
+          <div className="space-y-6">
+            <p className="text-sm text-gray-400 mb-4">输入后四轮1km跑步用时</p>
             <div className="grid grid-cols-2 gap-4">
               {['run5', 'run6', 'run7', 'run8'].map((run, idx) => (
-                <div key={run}>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div key={run} className="sport-card p-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-3 text-center">
                     第{idx + 5}轮跑步 *
                   </label>
-                  <input
-                    type="text"
-                    value={splits[run] ? formatSecondsToTime(splits[run]) : ''}
-                    onChange={(e) => handleSplitChange(run, e.target.value)}
-                    placeholder="4:30"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none text-center"
+                  <TimeSelector
+                    value={splits[run]}
+                    onChange={(seconds) => handleSplitChange(run, seconds)}
+                    maxHours={0}
+                    maxMinutes={20}
+                    size="sm"
+                    showLabels={true}
                   />
                 </div>
               ))}
@@ -333,20 +323,21 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
 
       case 3:
         return (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">输入各站点用时（格式：时:分:秒）</p>
+          <div className="space-y-6">
+            <p className="text-sm text-gray-400 mb-4">输入各站点用时</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {stations.map((station) => (
-                <div key={station.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div key={station.key} className="sport-card p-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-3 text-center">
                     {station.icon} {station.label} *
                   </label>
-                  <input
-                    type="text"
-                    value={splits[station.key] ? formatSecondsToTime(splits[station.key]) : ''}
-                    onChange={(e) => handleSplitChange(station.key, e.target.value)}
-                    placeholder="2:30"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none text-center"
+                  <TimeSelector
+                    value={splits[station.key]}
+                    onChange={(seconds) => handleSplitChange(station.key, seconds)}
+                    maxHours={0}
+                    maxMinutes={10}
+                    size="sm"
+                    showLabels={true}
                   />
                 </div>
               ))}
@@ -362,53 +353,55 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
 
         return (
           <div className="space-y-4">
-            <div className="bg-orange-50 rounded-xl p-4">
-              <h4 className="font-semibold text-orange-800 mb-3">成绩概览</h4>
+            <div className="sport-card p-4 bg-gradient-to-br from-orange-500/10 to-red-500/5 border-orange-500/20">
+              <h4 className="font-semibold text-orange-400 mb-3 flex items-center gap-2">
+                <Dumbbell className="w-4 h-4" />
+                成绩概览
+              </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">运动员</span>
-                  <span className="font-medium">{athleteInfo.name || '未命名'} ({athleteInfo.gender === 'male' ? '男' : '女'})</span>
+                  <span className="text-gray-400">运动员</span>
+                  <span className="font-medium text-white">{athleteInfo.name || '未命名'} ({athleteInfo.gender === 'male' ? '男' : '女'})</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">总用时</span>
-                  <span className="font-bold text-orange-600">{formatSecondsToTime(totalTime)}</span>
+                  <span className="text-gray-400">总用时</span>
+                  <span className="font-bold text-orange-400">{formatSecondsToTime(totalTime)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">跑步总用时</span>
-                  <span className="font-medium">{formatSecondsToTime(totalRuns)}</span>
+                  <span className="text-gray-400">跑步总用时</span>
+                  <span className="font-medium text-white">{formatSecondsToTime(totalRuns)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">站点总用时</span>
-                  <span className="font-medium">{formatSecondsToTime(totalStations)}</span>
+                  <span className="text-gray-400">站点总用时</span>
+                  <span className="font-medium text-white">{formatSecondsToTime(totalStations)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4">
-              <h4 className="font-semibold text-gray-800 mb-3">跑步成绩</h4>
+            <div className="sport-card p-4">
+              <h4 className="font-semibold text-white mb-3">跑步成绩</h4>
               <div className="grid grid-cols-4 gap-2 text-center text-sm">
                 {['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'].map((run, idx) => (
-                  <div key={run} className="bg-white rounded-lg p-2">
+                  <div key={run} className="bg-gray-800/50 rounded-lg p-2">
                     <div className="text-gray-500 text-xs">R{idx + 1}</div>
-                    <div className="font-medium">{formatSecondsToTime(splits[run])}</div>
+                    <div className="font-medium text-white">{formatSecondsToTime(splits[run])}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4">
-              <h4 className="font-semibold text-gray-800 mb-3">站点成绩</h4>
+            <div className="sport-card p-4">
+              <h4 className="font-semibold text-white mb-3">站点成绩</h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
                 {stations.map((station) => (
-                  <div key={station.key} className="bg-white rounded-lg p-2 text-center">
+                  <div key={station.key} className="bg-gray-800/50 rounded-lg p-2 text-center">
                     <div className="text-gray-500 text-xs">{station.icon} {station.label}</div>
-                    <div className="font-medium">{formatSecondsToTime(splits[station.key])}</div>
+                    <div className="font-medium text-white">{formatSecondsToTime(splits[station.key])}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Import/Export */}
             <div className="flex justify-center pt-2">
               <DataImportExport
                 data={{ athleteInfo, splits }}
@@ -441,7 +434,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 text-xs text-gray-400 text-center"
+          className="mb-4 text-xs text-gray-500 text-center"
         >
           {isSaving ? '保存中...' : `上次保存: ${lastSaved.toLocaleTimeString()}`}
         </motion.div>
@@ -456,17 +449,17 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
             exit={{ opacity: 0, y: -20 }}
             className="mb-4 flex flex-col gap-2"
           >
-            <div className="flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg text-sm">
+            <div className="flex items-center gap-2 text-red-400 bg-red-500/10 px-4 py-3 rounded-lg text-sm border border-red-500/20">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <div className="flex-1">
                 <div className="font-medium">{apiError.title}</div>
-                <div className="text-red-500">{apiError.message}</div>
+                <div className="text-red-300/80">{apiError.message}</div>
               </div>
             </div>
             {apiError.retryable && (
               <button
                 onClick={clearError}
-                className="flex items-center justify-center gap-2 text-sm text-orange-600 hover:text-orange-700 py-2"
+                className="flex items-center justify-center gap-2 text-sm text-orange-400 hover:text-orange-300 py-2"
               >
                 <RefreshCw className="w-4 h-4" />
                 重试
@@ -480,7 +473,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
       <div className="flex justify-end mb-4">
         <button
           onClick={handleClearData}
-          className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 transition"
+          className="flex items-center gap-1 text-sm text-red-400 hover:text-red-300 transition"
         >
           <Trash2 className="w-4 h-4" />
           清除数据
