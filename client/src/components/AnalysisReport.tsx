@@ -1,7 +1,8 @@
-import { Trophy, Target, TrendingUp, TrendingDown, Activity, AlertCircle, Zap, Dumbbell, Flame } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Trophy, Target, TrendingUp, TrendingDown, Activity, AlertCircle, Zap, Dumbbell, Flame, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FadeIn, StaggerContainer, StaggerItem, AnimatedCard } from './ui/Animations';
 import { PacingChart } from './PacingChart';
+import { useState } from 'react';
 
 interface AnalysisReportProps {
   analysis: {
@@ -38,7 +39,6 @@ interface AnalysisReportProps {
     }[];
     aiSummary: string;
     predictedImprovement: string;
-    // Advanced analysis (new)
     energySystemAnalysis?: {
       atpCpContribution: number;
       glycolyticContribution: number;
@@ -60,6 +60,84 @@ interface AnalysisReportProps {
   onBack?: () => void;
 }
 
+// 可折叠面板组件
+interface CollapsibleSectionProps {
+  title: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+  defaultExpanded?: boolean;
+  delay?: number;
+  badge?: React.ReactNode;
+}
+
+function CollapsibleSection({ 
+  title, 
+  subtitle, 
+  icon, 
+  children, 
+  defaultExpanded = false,
+  delay = 0,
+  badge
+}: CollapsibleSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  return (
+    <FadeIn delay={delay}>
+      <AnimatedCard>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          {/* 标题栏 - 点击展开/收起 */}
+          <motion.button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+            whileTap={{ scale: 0.995 }}
+          >
+            <div className="flex items-center gap-3">
+              {icon && <div className="text-orange-500">{icon}</div>}
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-900">{title}</span>
+                  {badge}
+                </div>
+                {subtitle && (
+                  <span className="text-sm text-gray-500">{subtitle}</span>
+                )}
+              </div>
+            </div>
+            <motion.div
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="text-gray-400"
+            >
+              <ChevronDown className="w-5 h-5" />
+            </motion.div>
+          </motion.button>
+
+          {/* 内容区域 - 带动画 */}
+          <AnimatePresence initial={false}>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ 
+                  height: { duration: 0.3, ease: "easeInOut" },
+                  opacity: { duration: 0.2 }
+                }}
+                className="overflow-hidden"
+              >
+                <div className="p-4 sm:p-5 pt-0 border-t border-gray-100">
+                  {children}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </AnimatedCard>
+    </FadeIn>
+  );
+}
+
 function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
   const getLevelInfo = (level: string) => {
     switch (level) {
@@ -71,25 +149,11 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
   };
 
   const levelInfo = getLevelInfo(analysis.level);
-  const topWeakness = analysis.weaknesses[0];
+  
+  // 获取最需要改进的3项
+  const top3Weaknesses = analysis.weaknesses.slice(0, 3);
   const topStrength = analysis.strengths[0];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
-  // Helper for energy system display
   const getDominantSystemName = (system: string) => {
     switch (system) {
       case 'ATP-CP': return 'ATP-CP (爆发力)';
@@ -99,7 +163,6 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
     }
   };
 
-  // Helper for muscle group color
   const getMuscleGroupColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
@@ -107,7 +170,6 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
     return 'text-red-600';
   };
 
-  // Helper for muscle group bar color
   const getMuscleGroupBarColor = (score: number) => {
     if (score >= 80) return 'bg-green-500';
     if (score >= 60) return 'bg-yellow-500';
@@ -130,150 +192,226 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
         </FadeIn>
       )}
 
-      {/* 核心数据卡片 */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white mb-6 shadow-xl"
+      {/* ==================== 第一层：核心结论（默认展开） ==================== */}
+      <CollapsibleSection
+        title="核心结论"
+        subtitle="点击查看详细等级评估"
+        icon={<Trophy className="w-5 h-5" />}
+        defaultExpanded={true}
+        delay={0.1}
+        badge={
+          <span className={`text-xs px-2 py-0.5 rounded-full ${levelInfo.bg} ${levelInfo.color}`}>
+            {levelInfo.text}
+          </span>
+        }
       >
-        <div className="text-center mb-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-4xl sm:text-5xl font-bold mb-1"
-          >
-            {analysis.formattedTotalTime}
-          </motion.div>
-          <div className="text-orange-100">总成绩</div>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white/20 rounded-xl p-3 backdrop-blur-sm"
-          >
+        {/* 核心数据卡片 */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white mb-6 shadow-xl"
+        >
+          <div className="text-center mb-4">
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-xl sm:text-2xl font-bold"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl sm:text-5xl font-bold mb-1"
             >
-              {analysis.overallScore}
+              {analysis.formattedTotalTime}
             </motion.div>
-            <div className="text-xs text-orange-100">综合分</div>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
-            className={`rounded-xl p-3 ${levelInfo.bg} ${levelInfo.borderColor} border`}
-          >
-            <div className={`text-lg sm:text-xl font-bold ${levelInfo.color}`}>{levelInfo.text}</div>
-            <div className="text-xs text-gray-500">水平</div>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-            className="bg-white/20 rounded-xl p-3 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="text-xl sm:text-2xl font-bold text-green-300"
-            >
-              {analysis.predictedImprovement}
-            </motion.div>
-            <div className="text-xs text-orange-100">预计提升</div>
-          </motion.div>
-        </div>
-      </motion.div>
-
-      {/* AI 总结 */}
-      <FadeIn delay={0.3}>
-        <AnimatedCard>
-          <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-            <div className="flex items-start gap-3">
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 0.5, delay: 1 }}
-              >
-                <Zap className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              </motion.div>
-              <p className="text-sm text-blue-800 leading-relaxed">{analysis.aiSummary}</p>
-            </div>
+            <div className="text-orange-100">总成绩</div>
           </div>
-        </AnimatedCard>
-      </FadeIn>
+          
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white/20 rounded-xl p-3 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-xl sm:text-2xl font-bold"
+              >
+                {analysis.overallScore}
+              </motion.div>
+              <div className="text-xs text-orange-100">综合分</div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 }}
+              className={`rounded-xl p-3 ${levelInfo.bg} ${levelInfo.borderColor} border`}
+            >
+              <div className={`text-lg sm:text-xl font-bold ${levelInfo.color}`}>{levelInfo.text}</div>
+              <div className="text-xs text-gray-500">水平</div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className="bg-white/20 rounded-xl p-3 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-xl sm:text-2xl font-bold text-green-300"
+              >
+                {analysis.predictedImprovement}
+              </motion.div>
+              <div className="text-xs text-orange-100">预计提升</div>
+            </motion.div>
+          </div>
+        </motion.div>
 
-      {/* 关键指标 */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"
-      >
-        {/* 最大弱项 */}
-        {topWeakness && (
-          <motion.div variants={itemVariants}>
-            <AnimatedCard>
-              <div className="bg-red-50 rounded-xl p-4 border border-red-100">
-                <div className="flex items-center gap-2 text-red-600 mb-2">
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="text-sm font-medium">最大短板</span>
+        {/* AI 总结 */}
+        <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 mb-6">
+          <div className="flex items-start gap-3">
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 0.5, delay: 1 }}
+            >
+              <Zap className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            </motion.div>
+            <p className="text-sm text-blue-800 leading-relaxed">{analysis.aiSummary}</p>
+          </div>
+        </div>
+
+        {/* 最需要改进的3项 */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle className="w-5 h-5 text-red-500" />
+            <span className="font-semibold text-gray-900">最需要改进的3项</span>
+          </div>
+          
+          <div className="space-y-3">
+            {top3Weaknesses.map((weakness, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * idx }}
+                className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100"
+              >
+                <div className="w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                  {idx + 1}
                 </div>
-                <div className="text-lg font-bold text-gray-800">{topWeakness.displayName}</div>
-                <div className="text-sm text-red-600 mt-1">
-                  慢了 {Math.round(topWeakness.gap / 60 * 10) / 10} 分钟
+                <div className="flex-1">
+                  <div className="font-medium text-gray-800">{weakness.displayName}</div>
+                  <div className="text-sm text-red-600">
+                    慢了 {Math.round(weakness.gap / 60 * 10) / 10} 分钟 ({weakness.formattedTime})
+                  </div>
                 </div>
-              </div>
-            </AnimatedCard>
-          </motion.div>
-        )}
+                <TrendingDown className="w-5 h-5 text-red-400" />
+              </motion.div>
+            ))}
+          </div>
+        </div>
 
         {/* 最大优势 */}
         {topStrength && (
-          <motion.div variants={itemVariants}>
-            <AnimatedCard>
-              <div className="bg-green-50 rounded-xl p-4 border border-green-100">
-                <div className="flex items-center gap-2 text-green-600 mb-2">
-                  <Trophy className="w-4 h-4" />
-                  <span className="text-sm font-medium">最大优势</span>
-                </div>
-                <div className="text-lg font-bold text-gray-800">{topStrength.displayName}</div>
-                <div className="text-sm text-green-600 mt-1">
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Trophy className="w-5 h-5 text-green-500" />
+              <span className="font-semibold text-gray-900">最大优势</span>
+            </div>
+            <div className="p-3 bg-green-50 rounded-lg border border-green-100 flex items-center gap-3">
+              <div className="flex-1">
+                <div className="font-medium text-gray-800">{topStrength.displayName}</div>
+                <div className="text-sm text-green-600">
                   快了 {Math.round(topStrength.advantage / 60 * 10) / 10} 分钟
                 </div>
               </div>
-            </AnimatedCard>
-          </motion.div>
+              <TrendingUp className="w-5 h-5 text-green-400" />
+            </div>
+          </div>
         )}
-      </motion.div>
+      </CollapsibleSection>
 
-      {/* 能量系统分析 */}
-      {analysis.energySystemAnalysis && (
-        <FadeIn delay={0.4}>
-          <AnimatedCard>
-            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
-              <div className="flex items-center gap-2 mb-4">
-                <Flame className="w-5 h-5 text-orange-500" />
-                <span className="font-semibold text-lg">⚡ 能量系统分析</span>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 能量系统贡献 */}
-                <div className="space-y-4">
-                  <div className="text-sm text-gray-600 mb-2">
-                    主导系统：<span className="font-semibold text-orange-600">{getDominantSystemName(analysis.energySystemAnalysis.dominantSystem)}</span>
+      {/* ==================== 第二层：详细分析（默认折叠） ==================== */}
+      <div className="mt-4">
+        <CollapsibleSection
+          title="详细分析"
+          subtitle="所有强弱项、配速分析、能量系统、肌肉群疲劳"
+          icon={<Activity className="w-5 h-5" />}
+          defaultExpanded={false}
+          delay={0.2}
+        >
+          {/* 所有弱项 */}
+          {analysis.weaknesses.length > 0 && (
+            <div className="mb-6">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <TrendingDown className="w-4 h-4 text-red-500" />
+                所有弱项 ({analysis.weaknesses.length}项)
+              </h4>
+              <div className="space-y-2">
+                {analysis.weaknesses.map((weakness, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div>
+                      <div className="font-medium text-gray-800">{weakness.displayName}</div>
+                      <div className="text-sm text-gray-600">{weakness.formattedTime}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-red-600">+{Math.round(weakness.gap / 60 * 10) / 10}分钟</div>
+                      <div className="text-xs text-gray-500">慢于平均水平</div>
+                    </div>
                   </div>
-                  
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 所有强项 */}
+          {analysis.strengths.length > 0 && (
+            <div className="mb-6">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-green-500" />
+                所有强项 ({analysis.strengths.length}项)
+              </h4>
+              <div className="space-y-2">
+                {analysis.strengths.map((strength, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <div className="font-medium text-gray-800">{strength.displayName}</div>
+                      <div className="text-sm text-gray-600">{strength.formattedTime}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-green-600">-{Math.round(strength.advantage / 60 * 10) / 10}分钟</div>
+                      <div className="text-xs text-gray-500">快于平均水平</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 配速分析 */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-gray-900 mb-3">配速分析</h4>
+            <PacingChart runs={analysis.pacingAnalysis.runs} />
+            <p className="text-sm text-gray-600 mt-3 bg-gray-50 p-3 rounded-lg">{analysis.pacingAnalysis.summary}</p>
+          </div>
+
+          {/* 能量系统分析 */}
+          {analysis.energySystemAnalysis && (
+            <div className="mb-6">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-500" />
+                能量系统分析
+              </h4>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600 mb-3">
+                  主导系统：<span className="font-semibold text-orange-600">{getDominantSystemName(analysis.energySystemAnalysis.dominantSystem)}</span>
+                </div>
+                
+                <div className="space-y-3">
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-700">ATP-CP (爆发力)</span>
@@ -320,178 +458,109 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
                   </div>
                 </div>
                 
-                {/* 分析说明 */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-medium text-gray-900 mb-2">📊 分析解读</h4>
-                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{analysis.energySystemAnalysis.analysis}</p>
-                </div>
+                <p className="text-sm text-gray-700 mt-4 leading-relaxed whitespace-pre-line">{analysis.energySystemAnalysis.analysis}</p>
               </div>
             </div>
-          </AnimatedCard>
-        </FadeIn>
-      )}
+          )}
 
-      {/* 肌肉群疲劳分析 */}
-      {analysis.muscleFatigueAnalysis && (
-        <FadeIn delay={0.5}>
-          <AnimatedCard>
-            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
-              <div className="flex items-center gap-2 mb-4">
-                <Dumbbell className="w-5 h-5 text-blue-500" />
-                <span className="font-semibold text-lg">💪 肌肉群疲劳分析</span>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 肌肉群评分 */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-600 mb-1">最强肌群</div>
-                      <div className="text-lg font-bold text-green-600">{analysis.muscleFatigueAnalysis.strongestGroup}</div>
-                    </div>
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-600 mb-1">最弱肌群</div>
-                      <div className="text-lg font-bold text-red-600">{analysis.muscleFatigueAnalysis.weakestGroup}</div>
-                    </div>
+          {/* 肌肉群疲劳分析 */}
+          {analysis.muscleFatigueAnalysis && (
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <Dumbbell className="w-4 h-4 text-blue-500" />
+                肌肉群疲劳分析
+              </h4>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="text-center p-3 bg-white rounded-lg">
+                    <div className="text-xs text-gray-600 mb-1">最强肌群</div>
+                    <div className="text-lg font-bold text-green-600">{analysis.muscleFatigueAnalysis.strongestGroup}</div>
                   </div>
-                  
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700">上肢推力</span>
-                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.upperBodyPush)}`}>
-                        {analysis.muscleFatigueAnalysis.upperBodyPush}/100
-                      </span>
-                    </div>
-                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${analysis.muscleFatigueAnalysis.upperBodyPush}%` }}
-                        transition={{ duration: 0.8, delay: 0.5 }}
-                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.upperBodyPush)}`}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700">上肢拉力</span>
-                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.upperBodyPull)}`}>
-                        {analysis.muscleFatigueAnalysis.upperBodyPull}/100
-                      </span>
-                    </div>
-                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${analysis.muscleFatigueAnalysis.upperBodyPull}%` }}
-                        transition={{ duration: 0.8, delay: 0.6 }}
-                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.upperBodyPull)}`}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700">下肢股四头肌</span>
-                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.lowerBodyQuad)}`}>
-                        {analysis.muscleFatigueAnalysis.lowerBodyQuad}/100
-                      </span>
-                    </div>
-                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${analysis.muscleFatigueAnalysis.lowerBodyQuad}%` }}
-                        transition={{ duration: 0.8, delay: 0.7 }}
-                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.lowerBodyQuad)}`}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700">下肢后链</span>
-                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.lowerBodyPosterior)}`}>
-                        {analysis.muscleFatigueAnalysis.lowerBodyPosterior}/100
-                      </span>
-                    </div>
-                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${analysis.muscleFatigueAnalysis.lowerBodyPosterior}%` }}
-                        transition={{ duration: 0.8, delay: 0.8 }}
-                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.lowerBodyPosterior)}`}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-700">核心稳定性</span>
-                      <span className={`font-medium ${getMuscleGroupColor(analysis.muscleFatigueAnalysis.coreStability)}`}>
-                        {analysis.muscleFatigueAnalysis.coreStability}/100
-                      </span>
-                    </div>
-                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${analysis.muscleFatigueAnalysis.coreStability}%` }}
-                        transition={{ duration: 0.8, delay: 0.9 }}
-                        className={`h-full rounded-full ${getMuscleGroupBarColor(analysis.muscleFatigueAnalysis.coreStability)}`}
-                      />
-                    </div>
+                  <div className="text-center p-3 bg-white rounded-lg">
+                    <div className="text-xs text-gray-600 mb-1">最弱肌群</div>
+                    <div className="text-lg font-bold text-red-600">{analysis.muscleFatigueAnalysis.weakestGroup}</div>
                   </div>
                 </div>
                 
-                {/* 分析说明 */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-medium text-gray-900 mb-2">📊 分析解读</h4>
-                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{analysis.muscleFatigueAnalysis.analysis}</p>
+                <div className="space-y-3">
+                  {[
+                    { label: '上肢推力', key: 'upperBodyPush' },
+                    { label: '上肢拉力', key: 'upperBodyPull' },
+                    { label: '下肢股四头肌', key: 'lowerBodyQuad' },
+                    { label: '下肢后链', key: 'lowerBodyPosterior' },
+                    { label: '核心稳定性', key: 'coreStability' },
+                  ].map((item) => {
+                    const score = analysis.muscleFatigueAnalysis![item.key as keyof typeof analysis.muscleFatigueAnalysis] as number;
+                    return (
+                      <div key={item.key}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-gray-700">{item.label}</span>
+                          <span className={`font-medium ${getMuscleGroupColor(score)}`}>{score}/100</span>
+                        </div>
+                        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${score}%` }}
+                            transition={{ duration: 0.8 }}
+                            className={`h-full rounded-full ${getMuscleGroupBarColor(score)}`}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+                
+                <p className="text-sm text-gray-700 mt-4 leading-relaxed whitespace-pre-line">{analysis.muscleFatigueAnalysis.analysis}</p>
               </div>
             </div>
-          </AnimatedCard>
-        </FadeIn>
-      )}
+          )}
+        </CollapsibleSection>
+      </div>
 
-      {/* 配速曲线图 */}
-      <FadeIn delay={0.6}>
-        <PacingChart runs={analysis.pacingAnalysis.runs} />
-      </FadeIn>
-
-      {/* 训练建议 */}
-      <FadeIn delay={0.7}>
-        <AnimatedCard>
-          <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-            <div className="flex items-center gap-2 mb-4">
-              <Target className="w-5 h-5 text-orange-500" />
-              <span className="font-semibold">下周练什么？</span>
-            </div>
-
-            <StaggerContainer staggerDelay={0.1}>
-              <div className="space-y-3">
-                {analysis.recommendations.slice(0, 3).map((rec, idx) => (
-                  <StaggerItem key={idx}>
-                    <motion.div
-                      whileHover={{ x: 4, backgroundColor: '#fff7ed' }}
-                      className="flex gap-3 p-3 bg-gray-50 rounded-lg transition-colors cursor-pointer active:scale-[0.98] touch-manipulation"
-                    >
-                      <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-800">{rec.area}</div>
-                        <p className="text-sm text-gray-600 mt-1">{rec.suggestion}</p>
-                      </div>
-                    </motion.div>
-                  </StaggerItem>
-                ))}
-              </div>
-            </StaggerContainer>
+      {/* ==================== 第三层：训练计划（默认折叠） ==================== */}
+      <div className="mt-4">
+        <CollapsibleSection
+          title="训练计划"
+          subtitle="下周练什么？点击查看详细建议"
+          icon={<Target className="w-5 h-5" />}
+          defaultExpanded={false}
+          delay={0.3}
+          badge={
+            <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-600">
+              {analysis.recommendations.length} 项建议
+            </span>
+          }
+        >
+          <div className="space-y-4">
+            {analysis.recommendations.map((rec, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * idx }}
+                className="p-4 bg-gradient-to-r from-orange-50 to-white rounded-xl border border-orange-100"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 mb-1">{rec.area}</div>
+                    <p className="text-sm text-gray-700 mb-2">{rec.suggestion}</p>
+                    <div className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                      <TrendingUp className="w-3 h-3" />
+                      预计提升: {rec.expectedImprovement}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </AnimatedCard>
-      </FadeIn>
+        </CollapsibleSection>
+      </div>
 
       {/* 分享按钮 */}
-      <FadeIn delay={0.8}>
+      <FadeIn delay={0.4}>
         <motion.button
           onClick={() => alert('分享功能开发中')}
           whileHover={{ scale: 1.02 }}

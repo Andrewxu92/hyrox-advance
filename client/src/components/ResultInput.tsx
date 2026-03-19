@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Loader2, Search, Zap, User, ChevronRight, History, Trophy, TrendingUp, AlertCircle, Trash2, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LoadingOverlay, LoadingButton } from './ui/Loading';
+import { LoadingOverlay, LoadingButton, AnalysisLoadingOverlay } from './ui/Loading';
 import { FadeIn, AnimatedCard } from './ui/Animations';
 import { useFormAutoSave } from '../hooks/useLocalStorage';
 import { useApiHandler, withRetry } from '../hooks/useApiHandler';
@@ -65,8 +65,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
   // API 处理
   const { isLoading: isAnalyzing, error: apiError, execute, clearError } = useApiHandler();
   const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('AI正在分析...');
-  const [loadingSubMessage, setLoadingSubMessage] = useState('');
+  const [analysisStep, setAnalysisStep] = useState(1);
 
   // 自动保存表单数据
   const formData = { mode, quickInput, athleteInfo };
