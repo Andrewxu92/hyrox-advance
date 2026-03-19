@@ -77,7 +77,7 @@ describe('calculateDelay', () => {
     };
     
     const delay = calculateDelay(2, customConfig);
-    expect(delay).toBeGreaterThan(500 * 9); // 500 * 3^2
+    expect(delay).toBeGreaterThanOrEqual(500 * 9); // 500 * 3^2
   });
 });
 

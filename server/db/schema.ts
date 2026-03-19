@@ -80,7 +80,7 @@ export const results = sqliteTable('results', {
 // ============================================
 export const analysisReports = sqliteTable('analysis_reports', {
   id: text('id').primaryKey(),
-  resultId: text('result_id').notNull().references(() => results.id),
+  resultId: text('result_id').references(() => results.id),
   athleteId: text('athlete_id').notNull().references(() => athletes.id),
   
   // 总体评估
@@ -106,6 +106,10 @@ export const analysisReports = sqliteTable('analysis_reports', {
   
   // AI 生成内容
   aiSummary: text('ai_summary'),
+  
+  // 进阶分析（JSON 格式）
+  energySystemAnalysis: text('energy_system_analysis'),
+  muscleFatigueAnalysis: text('muscle_fatigue_analysis'),
   
   // 时间戳
   createdAt: text('created_at').notNull().$default(() => new Date().toISOString()),

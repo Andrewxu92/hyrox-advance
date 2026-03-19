@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
   User, Calendar, Trophy, TrendingUp, TrendingDown, 
-  AlertCircle, Activity, Target, Plus, X, Timer, Flame
+  AlertCircle, Activity, Target, Plus, X, Timer, Flame, GitCompare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TimeSelector, { TimeSelectorCompact } from '../components/ui/TimeSelector';
+import CompareResultsView, { type CompareData } from '../components/CompareResultsView';
 
 interface Athlete {
   id: string;
@@ -40,8 +41,13 @@ function MyResults() {
   const [manualRuns, setManualRuns] = useState<Record<string, number>>({});
   const [showRunInput, setShowRunInput] = useState(false);
   const [showAddAthlete, setShowAddAthlete] = useState(false);
+  const [selectingForCompare, setSelectingForCompare] = useState(false);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [comparisonData, setComparisonData] = useState<CompareData | null>(null);
+  const [showCompareView, setShowCompareView] = useState(false);
+  const [compareLoading, setCompareLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || '';
+  const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || '';
 
   useEffect(() => {
     loadAthletes();
@@ -200,6 +206,43 @@ function MyResults() {
     return names[key] || key;
   };
 
+  const toggleCompareId = (id: string) => {
+    setCompareIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleViewCompare = async () => {
+    if (!selectedAthlete || compareIds.length < 2) return;
+    setCompareLoading(true);
+    setError('');
+    try {
+      const res = await fetch(
+        `${API_URL}/api/results/athlete/${selectedAthlete.id}/compare?resultIds=${compareIds.join(',')}`
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || '获取对比数据失败');
+      setComparisonData(json.data);
+      setShowCompareView(true);
+      setSelectingForCompare(false);
+      setCompareIds([]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取对比数据失败');
+    } finally {
+      setCompareLoading(false);
+    }
+  };
+
+  if (showCompareView && comparisonData) {
+    return (
+      <div className="min-h-screen py-4">
+        <div className="max-w-5xl mx-auto px-4">
+          <CompareResultsView data={comparisonData} onBack={() => setShowCompareView(false)} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       {/* 页面标题 */}
@@ -324,10 +367,22 @@ function MyResults() {
 
                 {/* 比赛历史列表 */}
                 <div className="sport-card p-4 mb-6">
-                  <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-gray-400" />
-                    比赛历史 ({results.length}场)
-                  </h3>
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-gray-400" />
+                      比赛历史 ({results.length}场)
+                    </h3>
+                    {results.length >= 2 && !selectingForCompare && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectingForCompare(true)}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-hyrox-red/20 text-hyrox-red-light hover:bg-hyrox-red/30 text-sm font-medium"
+                      >
+                        <GitCompare className="w-4 h-4" />
+                        成绩对比
+                      </button>
+                    )}
+                  </div>
                   
                   {loading ? (
                     <div className="p-8 text-center text-gray-500">
@@ -340,6 +395,58 @@ function MyResults() {
                       <p>还没有比赛记录</p>
                       <p className="text-sm mt-2">使用「成绩分析」页面添加第一场比赛</p>
                     </div>
+                  ) : selectingForCompare ? (
+                    <>
+                      <p className="text-sm text-gray-400 mb-3">选择至少 2 场成绩进行对比</p>
+                      <div className="space-y-2 max-h-72 overflow-y-auto mb-4">
+                        {results.map((race) => (
+                          <label
+                            key={race.id}
+                            className={`flex items-center gap-3 w-full text-left p-3 rounded-xl cursor-pointer transition ${
+                              compareIds.includes(race.id) ? 'bg-hyrox-red/10 border border-hyrox-red/30' : 'bg-gray-800/50 hover:bg-gray-800'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={compareIds.includes(race.id)}
+                              onChange={() => toggleCompareId(race.id)}
+                              className="w-4 h-4 rounded border-white/30 text-hyrox-red focus:ring-hyrox-red"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-white truncate">{race.raceName}</div>
+                              <div className="text-sm text-gray-500">
+                                {race.raceDate} {race.raceLocation && `· ${race.raceLocation}`}
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <div className="text-lg font-bold text-hyrox-red-light">{formatTime(race.totalTime)}</div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleViewCompare}
+                          disabled={compareIds.length < 2 || compareLoading}
+                          className="px-4 py-2 rounded-xl bg-hyrox-red hover:bg-hyrox-red-dark text-white font-medium text-sm disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {compareLoading ? (
+                            <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                          ) : (
+                            <GitCompare className="w-4 h-4" />
+                          )}
+                          查看对比 ({compareIds.length} 场)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setSelectingForCompare(false); setCompareIds([]); }}
+                          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-gray-300 text-sm"
+                        >
+                          取消
+                        </button>
+                      </div>
+                    </>
                   ) : (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
                       {results.map((race) => (

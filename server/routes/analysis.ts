@@ -1,169 +1,62 @@
 import { Router } from 'express';
-import { generateAnalysis, AthleteInfo, HyroxSplits } from '../lib/openai.js';
-import { calculateTotalTime, formatTime, determineLevel, getBenchmarks, STATION_DISPLAY_NAMES } from '../lib/hyrox-data.js';
-import { generateAdvancedAnalysis } from '../lib/advanced-analysis.js';
+import {
+  validateAnalysisRequest,
+  validateQuickAnalysisRequest,
+  runFullAnalysis,
+  runQuickAnalysis,
+  getBenchmarksForGender,
+  ValidationError,
+} from '../lib/analysis-handlers.js';
 
 const router = Router();
 
 // POST /api/analysis - Generate AI analysis
 router.post('/', async (req, res) => {
   try {
-    const { splits, athleteInfo } = req.body;
-    
-    // Validate input
-    if (!splits || !athleteInfo) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Missing required data: splits and athleteInfo are required' 
-      });
+    const { splits, athleteInfo } = validateAnalysisRequest(req.body);
+    const data = await runFullAnalysis(splits, athleteInfo);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(err.statusCode).json({ success: false, error: err.message });
     }
-
-    // Validate splits has all required fields
-    const requiredSplits = [
-      'run1', 'skiErg', 'run2', 'sledPush',
-      'run3', 'burpeeBroadJump', 'run4', 'rowing',
-      'run5', 'farmersCarry', 'run6', 'sandbagLunges',
-      'run7', 'wallBalls', 'run8'
-    ];
-    
-    const missingSplits = requiredSplits.filter(key => !(key in splits) || splits[key] == null);
-    if (missingSplits.length > 0) {
-      return res.status(400).json({
-        success: false,
-        error: `Missing splits: ${missingSplits.join(', ')}`
-      });
-    }
-
-    // Validate athleteInfo
-    if (!athleteInfo.gender || !['male', 'female'].includes(athleteInfo.gender)) {
-      return res.status(400).json({
-        success: false,
-        error: 'athleteInfo.gender must be "male" or "female"'
-      });
-    }
-
-    // Generate AI analysis
-    const analysis = await generateAnalysis(splits as HyroxSplits, athleteInfo as AthleteInfo);
-    
-    // Generate advanced analysis (energy system + muscle fatigue)
-    const advancedAnalysis = generateAdvancedAnalysis(splits);
-
-    res.json({
-      success: true,
-      data: {
-        ...analysis,
-        ...advancedAnalysis
-      }
-    });
-  } catch (error) {
-    console.error('Analysis route error:', error);
+    console.error('Analysis route error:', err);
     const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       success: false,
       error: 'Failed to generate analysis',
-      ...(isDev && { message: error instanceof Error ? error.message : 'Unknown error' })
+      ...(isDev && { message: err instanceof Error ? err.message : 'Unknown error' }),
     });
   }
 });
 
-// POST /api/analysis/quick - Quick analysis without AI (for instant feedback)
+// POST /api/analysis/quick - Quick analysis without AI
 router.post('/quick', async (req, res) => {
   try {
-    const { splits, athleteInfo } = req.body;
-    
-    if (!splits || !athleteInfo?.gender) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required data'
-      });
+    const { splits, athleteInfo } = validateQuickAnalysisRequest(req.body);
+    const data = runQuickAnalysis(splits, athleteInfo);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(err.statusCode).json({ success: false, error: err.message });
     }
-
-    const totalTime = calculateTotalTime(splits);
-    const level = determineLevel(totalTime, athleteInfo.gender);
-    const benchmarks = getBenchmarks(athleteInfo.gender);
-
-    // Calculate station performance vs benchmarks
-    const stationAnalysis = [];
-    for (const [key, time] of Object.entries(splits)) {
-      if (key.startsWith('run')) continue;
-      
-      const stationBenchmark = benchmarks[level].stations[key];
-      if (stationBenchmark) {
-        const avgBenchmark = (stationBenchmark.min + stationBenchmark.max) / 2;
-        stationAnalysis.push({
-          station: key,
-          displayName: STATION_DISPLAY_NAMES[key] || key,
-          time: time as number,
-          formattedTime: formatTime(time as number),
-          benchmark: avgBenchmark,
-          gap: (time as number) - avgBenchmark
-        });
-      }
-    }
-
-    // Sort by performance (fastest first)
-    stationAnalysis.sort((a, b) => a.time - b.time);
-
-    // Analyze run pacing
-    const runTimes = [
-      splits.run1, splits.run2, splits.run3, splits.run4,
-      splits.run5, splits.run6, splits.run7, splits.run8
-    ];
-    const firstRun = runTimes[0];
-    const lastRun = runTimes[runTimes.length - 1];
-    const avgRun = runTimes.reduce((a, b) => a + b, 0) / runTimes.length;
-
-    // Generate advanced analysis
-    const advancedAnalysis = generateAdvancedAnalysis(splits);
-
-    res.json({
-      success: true,
-      data: {
-        totalTime,
-        formattedTotalTime: formatTime(totalTime),
-        level,
-        stations: stationAnalysis,
-        runAnalysis: {
-          runs: runTimes.map((time, i) => ({
-            runNumber: i + 1,
-            time,
-            formattedTime: formatTime(time),
-            vsFirstRun: time - firstRun
-          })),
-          firstRun,
-          lastRun,
-          degradation: lastRun - firstRun,
-          average: avgRun
-        },
-        ...advancedAnalysis
-      }
-    });
-  } catch (error) {
-    console.error('Quick analysis error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate quick analysis'
-    });
+    console.error('Quick analysis error:', err);
+    res.status(500).json({ success: false, error: 'Failed to generate quick analysis' });
   }
 });
 
 // GET /api/analysis/benchmarks - Get benchmark data
 router.get('/benchmarks', (req, res) => {
-  const { gender = 'male' } = req.query;
-  
-  if (!['male', 'female'].includes(gender as string)) {
-    return res.status(400).json({
-      success: false,
-      error: 'gender must be "male" or "female"'
-    });
+  try {
+    const gender = (req.query.gender as string) || 'male';
+    const data = getBenchmarksForGender(gender);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(err.statusCode).json({ success: false, error: err.message });
+    }
+    throw err;
   }
-
-  const benchmarks = getBenchmarks(gender as 'male' | 'female');
-  
-  res.json({
-    success: true,
-    data: benchmarks
-  });
 });
 
 export default router;

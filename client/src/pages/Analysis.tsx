@@ -7,7 +7,7 @@ import TrainingPlan from '../components/TrainingPlan';
 import RadarChart from '../components/RadarChart';
 import { FadeIn, PageTransition } from '../components/ui/Animations';
 import { ToastContainer, useToast } from '../components/ui/Toast';
-import { Activity, BarChart3, Target, Dumbbell, Zap, ListTodo, Timer, Trophy } from 'lucide-react';
+import { Activity, BarChart3, Target, Dumbbell, ListTodo, Timer, Trophy, Search } from 'lucide-react';
 
 interface AnalysisData {
   level: 'elite' | 'intermediate' | 'beginner';
@@ -49,13 +49,14 @@ interface AnalysisData {
   predictedImprovement: string;
 }
 
-type InputMode = 'quick' | 'detailed';
+/** 三种输入方式并列，不再用「快捷/详细」两层 */
+type InputMode = 'total' | 'scrape' | 'detailed';
 
 function Analysis() {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [showTraining, setShowTraining] = useState(false);
   const [activeTab, setActiveTab] = useState<'report' | 'chart'>('report');
-  const [inputMode, setInputMode] = useState<InputMode>('quick');
+  const [inputMode, setInputMode] = useState<InputMode>('total');
   const { toasts, removeToast, success } = useToast();
 
   const handleAnalysis = (data: AnalysisData) => {
@@ -112,51 +113,85 @@ function Analysis() {
                   transition={{ delay: 0.1 }}
                   className="text-gray-400 text-sm sm:text-base"
                 >
-                  选择输入方式，AI 将为你生成专业分析
+                  选择一种方式输入成绩，AI 将为你生成专业分析
                 </motion.p>
               </div>
 
-              {/* Input Mode Toggle */}
+              {/* 三种方式并列，一次选清，避免「快速/总成绩」混淆 */}
               <FadeIn delay={0.1}>
-                <div className="flex gap-2 mb-6 max-w-md mx-auto" role="group" aria-label="输入模式选择">
-                  <button
-                    onClick={() => setInputMode('quick')}
-                    className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-                      inputMode === 'quick' 
-                        ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg' 
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                    }`}
-                    aria-pressed={inputMode === 'quick'}
+                <div className="mb-6 max-w-2xl mx-auto">
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+                    role="group"
+                    aria-label="输入方式"
                   >
-                    <Zap className="w-4 h-4" />
-                    快速估算
-                  </button>
-                  <button
-                    onClick={() => setInputMode('detailed')}
-                    className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-                      inputMode === 'detailed' 
-                        ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg' 
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                    }`}
-                    aria-pressed={inputMode === 'detailed'}
-                  >
-                    <ListTodo className="w-4 h-4" />
-                    详细输入
-                  </button>
+                    <button
+                      onClick={() => setInputMode('total')}
+                      className={`flex flex-col items-center gap-2 py-4 px-4 rounded-xl font-medium transition-all duration-300 border-2 ${
+                        inputMode === 'total'
+                          ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white border-hyrox-red shadow-lg'
+                          : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700 hover:border-gray-600'
+                      }`}
+                      aria-pressed={inputMode === 'total'}
+                      title="只填总成绩与强弱项，由 AI 估算各站分段"
+                    >
+                      <Timer className="w-6 h-6" />
+                      <span>总成绩估算</span>
+                      <span className="text-xs opacity-80 font-normal">只填总成绩 + 强弱项</span>
+                    </button>
+                    <button
+                      onClick={() => setInputMode('scrape')}
+                      className={`flex flex-col items-center gap-2 py-4 px-4 rounded-xl font-medium transition-all duration-300 border-2 ${
+                        inputMode === 'scrape'
+                          ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white border-hyrox-red shadow-lg'
+                          : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700 hover:border-gray-600'
+                      }`}
+                      aria-pressed={inputMode === 'scrape'}
+                      title="输入姓名，从 HYROX 官网抓取成绩"
+                    >
+                      <Search className="w-6 h-6" />
+                      <span>官网抓取</span>
+                      <span className="text-xs opacity-80 font-normal">输入姓名自动拉取</span>
+                    </button>
+                    <button
+                      onClick={() => setInputMode('detailed')}
+                      className={`flex flex-col items-center gap-2 py-4 px-4 rounded-xl font-medium transition-all duration-300 border-2 ${
+                        inputMode === 'detailed'
+                          ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white border-hyrox-red shadow-lg'
+                          : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700 hover:border-gray-600'
+                      }`}
+                      aria-pressed={inputMode === 'detailed'}
+                      title="逐站填写 8 跑 + 8 站，分析最精确"
+                    >
+                      <ListTodo className="w-6 h-6" />
+                      <span>详细输入</span>
+                      <span className="text-xs opacity-80 font-normal">逐站填写，最精确</span>
+                    </button>
+                  </div>
                 </div>
               </FadeIn>
 
               {/* Input Component */}
               <AnimatePresence mode="wait">
-                {inputMode === 'quick' ? (
+                {inputMode === 'total' ? (
                   <motion.div
-                    key="quick"
+                    key="total"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <ResultInput onAnalysis={handleAnalysis} />
+                    <ResultInput onAnalysis={handleAnalysis} forceMode="quick" />
+                  </motion.div>
+                ) : inputMode === 'scrape' ? (
+                  <motion.div
+                    key="scrape"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ResultInput onAnalysis={handleAnalysis} forceMode="scrape" />
                   </motion.div>
                 ) : (
                   <motion.div

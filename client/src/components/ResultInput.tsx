@@ -23,6 +23,8 @@ interface QuickInput {
 
 interface ResultInputProps {
   onAnalysis: (analysis: any) => void;
+  /** 指定后只显示该模式，不显示模式切换 */
+  forceMode?: 'quick' | 'scrape';
 }
 
 const stations = [
@@ -38,8 +40,12 @@ const stations = [
 const STORAGE_KEY = 'hyrox_history';
 const FORM_DATA_KEY = 'hyrox_form_data';
 
-function ResultInput({ onAnalysis }: ResultInputProps) {
-  const [mode, setMode] = useState<'quick' | 'scrape'>('quick');
+function ResultInput({ onAnalysis, forceMode }: ResultInputProps) {
+  const [mode, setMode] = useState<'quick' | 'scrape'>(forceMode ?? 'quick');
+  const showModeToggle = forceMode == null;
+  useEffect(() => {
+    if (forceMode != null) setMode(forceMode);
+  }, [forceMode]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
@@ -357,35 +363,44 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
         )}
       </AnimatePresence>
 
-      {/* 模式切换 */}
-      <FadeIn>
-        <div className="flex gap-2 mb-6" role="group" aria-label="输入模式选择">
-          <button
-            onClick={() => setMode('quick')}
-            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-              mode === 'quick' 
-                ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg' 
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-            aria-pressed={mode === 'quick'}
-          >
-            <Zap className="w-4 h-4" />
-            快速估算
-          </button>
-          <button
-            onClick={() => setMode('scrape')}
-            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-              mode === 'scrape' 
-                ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg' 
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-            aria-pressed={mode === 'scrape'}
-          >
-            <Search className="w-4 h-4" />
-            官网抓取
-          </button>
-        </div>
-      </FadeIn>
+      {/* 仅在未指定 forceMode 时显示模式切换（兼容单独使用 ResultInput 的场景） */}
+      {showModeToggle && (
+        <FadeIn>
+          <div className="mb-6">
+            <div className="flex gap-2" role="group" aria-label="快捷输入方式">
+              <button
+                onClick={() => setMode('quick')}
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+                  mode === 'quick'
+                    ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+                aria-pressed={mode === 'quick'}
+                title="填写总成绩与强弱项，系统估算各站分段"
+              >
+                <Timer className="w-4 h-4" />
+                总成绩估算
+              </button>
+              <button
+                onClick={() => setMode('scrape')}
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+                  mode === 'scrape'
+                    ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+                aria-pressed={mode === 'scrape'}
+                title="输入姓名从 HYROX 官网抓取成绩"
+              >
+                <Search className="w-4 h-4" />
+                官网抓取
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 text-center mt-1.5">
+              {mode === 'quick' ? '填总成绩 + 强弱项，AI 估算各站时间后分析' : '输入姓名搜索，从官网拉取成绩后分析'}
+            </p>
+          </div>
+        </FadeIn>
+      )}
 
       {/* 历史记录按钮和清除数据 */}
       {history.length > 0 && (
@@ -447,7 +462,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                         {record.athleteInfo?.name || '未命名'}
                       </span>
                       <span className="text-xs text-gray-500 ml-2">
-                        {record.type === 'scrape' ? '官网抓取' : '快速估算'}
+                        {record.type === 'scrape' ? '官网抓取' : '总成绩估算'}
                       </span>
                     </div>
                     <span className="text-sm text-gray-500">

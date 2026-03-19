@@ -82,18 +82,37 @@ export function useApiHandler() {
       options?: {
         onSuccess?: (data: T) => void;
         onError?: (error: ApiError) => void;
+        /** Delay in ms before showing loading (avoids flash for fast requests) */
         loadingDelay?: number;
+        /** Timeout in ms; aborts the request and throws so handleError shows timeout message */
+        timeoutMs?: number;
       }
     ): Promise<T | null> => {
-      setIsLoading(true);
       setError(null);
+      const delay = options?.loadingDelay ?? 0;
+      const timeoutMs = options?.timeoutMs;
+      if (delay <= 0) setIsLoading(true);
+      const delayId = delay > 0 ? window.setTimeout(() => setIsLoading(true), delay) : undefined;
+
+      const runWithTimeout = (): Promise<T> => {
+        if (timeoutMs == null || timeoutMs <= 0) return apiCall();
+        return new Promise((resolve, reject) => {
+          const timeoutId = window.setTimeout(() => reject(new Error('timeout')), timeoutMs);
+          apiCall().then(
+            (data) => { clearTimeout(timeoutId); resolve(data); },
+            (err) => { clearTimeout(timeoutId); reject(err); }
+          );
+        });
+      };
 
       try {
-        const data = await apiCall();
+        const data = await runWithTimeout();
+        if (delayId) clearTimeout(delayId);
         setIsLoading(false);
         options?.onSuccess?.(data);
         return data;
       } catch (err) {
+        if (delayId) clearTimeout(delayId);
         setIsLoading(false);
         const apiError = handleError(err);
         options?.onError?.(apiError);

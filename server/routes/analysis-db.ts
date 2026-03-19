@@ -1,255 +1,132 @@
 // Analysis API Routes with Database Persistence
-// Extended version of analysis.ts with database storage
+// Uses shared analysis-handlers for validation and analysis logic
 
 import { Router } from 'express';
-import { generateAnalysis, AthleteInfo, HyroxSplits } from '../lib/openai.js';
-import { calculateTotalTime, formatTime, determineLevel, getBenchmarks, STATION_DISPLAY_NAMES } from '../lib/hyrox-data.js';
-import { generateAdvancedAnalysis } from '../lib/advanced-analysis.js';
+import {
+  validateAnalysisRequest,
+  validateQuickAnalysisRequest,
+  runFullAnalysis,
+  runQuickAnalysis,
+  getBenchmarksForGender,
+  ValidationError,
+} from '../lib/analysis-handlers.js';
 import { getDatabase } from '../db/index.js';
 import { analysisReports, results, athletes, type NewAnalysisReport } from '../db/schema.js';
 import { eq, desc, and } from 'drizzle-orm';
 
 const router = Router();
 
-// Generate unique ID
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// ============================================
-// POST /api/analysis - Generate AI analysis and save to database
-// ============================================
+// POST /api/analysis-db - Generate AI analysis and save to database
 router.post('/', async (req, res) => {
   try {
-    const { splits, athleteInfo, resultId, athleteId, saveToDatabase = true } = req.body;
-    
-    // Validate input
-    if (!splits || !athleteInfo) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Missing required data: splits and athleteInfo are required' 
-      });
-    }
-
-    // Validate splits has all required fields
-    const requiredSplits = [
-      'run1', 'skiErg', 'run2', 'sledPush',
-      'run3', 'burpeeBroadJump', 'run4', 'rowing',
-      'run5', 'farmersCarry', 'run6', 'sandbagLunges',
-      'run7', 'wallBalls', 'run8'
-    ];
-    
-    const missingSplits = requiredSplits.filter(key => !(key in splits) || splits[key] == null);
-    if (missingSplits.length > 0) {
-      return res.status(400).json({
-        success: false,
-        error: `Missing splits: ${missingSplits.join(', ')}`
-      });
-    }
-
-    // Validate athleteInfo
-    if (!athleteInfo.gender || !['male', 'female'].includes(athleteInfo.gender)) {
-      return res.status(400).json({
-        success: false,
-        error: 'athleteInfo.gender must be "male" or "female"'
-      });
-    }
-
-    // Generate AI analysis
-    const analysis = await generateAnalysis(splits as HyroxSplits, athleteInfo as AthleteInfo);
-    
-    // Generate advanced analysis (energy system + muscle fatigue)
-    const advancedAnalysis = generateAdvancedAnalysis(splits);
-
-    // Combine analysis results
-    const combinedAnalysis = {
-      ...analysis,
-      ...advancedAnalysis,
+    const { splits, athleteInfo } = validateAnalysisRequest(req.body);
+    const { resultId, athleteId, saveToDatabase = true } = (req.body || {}) as {
+      resultId?: string;
+      athleteId?: string;
+      saveToDatabase?: boolean;
     };
 
-    // Save to database if requested
+    const combinedAnalysis = await runFullAnalysis(splits, athleteInfo);
+
     let savedAnalysisId: string | null = null;
     if (saveToDatabase) {
       try {
         const db = getDatabase();
-        
-        // Validate athlete exists if athleteId provided
-        let actualAthleteId = athleteId;
+        let actualAthleteId = athleteId ?? null;
+        let actualResultId = resultId ?? null;
+
         if (athleteId) {
           const athleteList = await db.select().from(athletes).where(eq(athletes.id, athleteId));
           if (athleteList.length === 0) {
-            return res.status(404).json({
-              success: false,
-              error: 'Athlete not found'
-            });
+            return res.status(404).json({ success: false, error: 'Athlete not found' });
           }
         }
 
-        // Validate result exists if resultId provided
-        let actualResultId = resultId;
         if (resultId) {
           const resultList = await db.select().from(results).where(eq(results.id, resultId));
           if (resultList.length === 0) {
-            return res.status(404).json({
-              success: false,
-              error: 'Result not found'
-            });
+            return res.status(404).json({ success: false, error: 'Result not found' });
           }
-          // Use athlete from result if not provided
-          if (!actualAthleteId) {
-            actualAthleteId = resultList[0].athleteId;
-          }
+          if (!actualAthleteId) actualAthleteId = resultList[0].athleteId;
         }
 
-        // Create analysis report
         const newAnalysis: NewAnalysisReport = {
           id: generateId(),
-          resultId: actualResultId || null,
-          athleteId: actualAthleteId || 'anonymous',
-          overallScore: combinedAnalysis.overallScore || null,
-          level: combinedAnalysis.level || null,
+          resultId: actualResultId,
+          athleteId: actualAthleteId ?? 'anonymous',
+          overallScore: (combinedAnalysis.overallScore as number) ?? null,
+          level: (combinedAnalysis.level as 'beginner' | 'intermediate' | 'advanced' | 'elite') ?? null,
           weaknesses: combinedAnalysis.weaknesses ? JSON.stringify(combinedAnalysis.weaknesses) : null,
           strengths: combinedAnalysis.strengths ? JSON.stringify(combinedAnalysis.strengths) : null,
           pacingAnalysis: combinedAnalysis.pacingAnalysis ? JSON.stringify(combinedAnalysis.pacingAnalysis) : null,
           fitnessProfile: combinedAnalysis.fitnessProfile ? JSON.stringify(combinedAnalysis.fitnessProfile) : null,
           recommendations: combinedAnalysis.recommendations ? JSON.stringify(combinedAnalysis.recommendations) : null,
-          aiSummary: combinedAnalysis.aiSummary || null,
+          aiSummary: (combinedAnalysis.aiSummary as string) ?? null,
+          energySystemAnalysis: combinedAnalysis.energySystemAnalysis ? JSON.stringify(combinedAnalysis.energySystemAnalysis) : null,
+          muscleFatigueAnalysis: combinedAnalysis.muscleFatigueAnalysis ? JSON.stringify(combinedAnalysis.muscleFatigueAnalysis) : null,
           createdAt: new Date().toISOString(),
         };
 
         await db.insert(analysisReports).values(newAnalysis);
         savedAnalysisId = newAnalysis.id;
-        
         console.log(`✅ Analysis saved to database: ${savedAnalysisId}`);
       } catch (dbError) {
         console.error('⚠️ Failed to save analysis to database:', dbError);
-        // Continue without failing - analysis is still returned
       }
     }
 
     res.json({
       success: true,
-      data: {
-        ...combinedAnalysis,
-        savedAnalysisId,
-      },
-      message: savedAnalysisId 
-        ? 'Analysis generated and saved to database' 
+      data: { ...combinedAnalysis, savedAnalysisId },
+      message: savedAnalysisId
+        ? 'Analysis generated and saved to database'
         : 'Analysis generated (not saved to database)',
     });
-  } catch (error) {
-    console.error('Analysis route error:', error);
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(err.statusCode).json({ success: false, error: err.message });
+    }
+    console.error('Analysis route error:', err);
     const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       success: false,
       error: 'Failed to generate analysis',
-      ...(isDev && { message: error instanceof Error ? error.message : 'Unknown error' })
+      ...(isDev && { message: err instanceof Error ? err.message : 'Unknown error' }),
     });
   }
 });
 
-// ============================================
-// POST /api/analysis/quick - Quick analysis without AI
-// ============================================
+// POST /api/analysis-db/quick - Quick analysis without AI
 router.post('/quick', async (req, res) => {
   try {
-    const { splits, athleteInfo } = req.body;
-    
-    if (!splits || !athleteInfo?.gender) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required data'
-      });
+    const { splits, athleteInfo } = validateQuickAnalysisRequest(req.body);
+    const data = runQuickAnalysis(splits, athleteInfo);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(err.statusCode).json({ success: false, error: err.message });
     }
-
-    const totalTime = calculateTotalTime(splits);
-    const level = determineLevel(totalTime, athleteInfo.gender);
-    const benchmarks = getBenchmarks(athleteInfo.gender);
-
-    // Calculate station performance vs benchmarks
-    const stationAnalysis = [];
-    for (const [key, time] of Object.entries(splits)) {
-      if (key.startsWith('run')) continue;
-      
-      const stationBenchmark = benchmarks[level].stations[key];
-      if (stationBenchmark) {
-        const avgBenchmark = (stationBenchmark.min + stationBenchmark.max) / 2;
-        stationAnalysis.push({
-          station: key,
-          displayName: STATION_DISPLAY_NAMES[key] || key,
-          time: time as number,
-          formattedTime: formatTime(time as number),
-          benchmark: avgBenchmark,
-          gap: (time as number) - avgBenchmark
-        });
-      }
-    }
-
-    // Sort by performance (fastest first)
-    stationAnalysis.sort((a, b) => a.time - b.time);
-
-    // Analyze run pacing
-    const runTimes = [
-      splits.run1, splits.run2, splits.run3, splits.run4,
-      splits.run5, splits.run6, splits.run7, splits.run8
-    ];
-    const firstRun = runTimes[0];
-    const lastRun = runTimes[runTimes.length - 1];
-    const avgRun = runTimes.reduce((a, b) => a + b, 0) / runTimes.length;
-
-    // Generate advanced analysis
-    const advancedAnalysis = generateAdvancedAnalysis(splits);
-
-    res.json({
-      success: true,
-      data: {
-        totalTime,
-        formattedTotalTime: formatTime(totalTime),
-        level,
-        stations: stationAnalysis,
-        runAnalysis: {
-          runs: runTimes.map((time, i) => ({
-            runNumber: i + 1,
-            time,
-            formattedTime: formatTime(time),
-            vsFirstRun: time - firstRun
-          })),
-          firstRun,
-          lastRun,
-          degradation: lastRun - firstRun,
-          average: avgRun
-        },
-        ...advancedAnalysis
-      }
-    });
-  } catch (error) {
-    console.error('Quick analysis error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate quick analysis'
-    });
+    console.error('Quick analysis error:', err);
+    res.status(500).json({ success: false, error: 'Failed to generate quick analysis' });
   }
 });
 
-// ============================================
-// GET /api/analysis/benchmarks - Get benchmark data
-// ============================================
+// GET /api/analysis-db/benchmarks - Get benchmark data
 router.get('/benchmarks', (req, res) => {
-  const { gender = 'male' } = req.query;
-  
-  if (!['male', 'female'].includes(gender as string)) {
-    return res.status(400).json({
-      success: false,
-      error: 'gender must be "male" or "female"'
-    });
+  try {
+    const gender = (req.query.gender as string) || 'male';
+    const data = getBenchmarksForGender(gender);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(err.statusCode).json({ success: false, error: err.message });
+    }
+    throw err;
   }
-
-  const benchmarks = getBenchmarks(gender as 'male' | 'female');
-  
-  res.json({
-    success: true,
-    data: benchmarks
-  });
 });
 
 // ============================================
@@ -291,6 +168,8 @@ router.get('/reports', async (req, res) => {
       pacingAnalysis: r.analysis.pacingAnalysis ? JSON.parse(r.analysis.pacingAnalysis) : null,
       fitnessProfile: r.analysis.fitnessProfile ? JSON.parse(r.analysis.fitnessProfile) : null,
       recommendations: r.analysis.recommendations ? JSON.parse(r.analysis.recommendations) : null,
+      energySystemAnalysis: r.analysis.energySystemAnalysis ? JSON.parse(r.analysis.energySystemAnalysis) : null,
+      muscleFatigueAnalysis: r.analysis.muscleFatigueAnalysis ? JSON.parse(r.analysis.muscleFatigueAnalysis) : null,
     }));
 
     res.json({
@@ -341,6 +220,8 @@ router.get('/reports/:id', async (req, res) => {
       pacingAnalysis: r.analysis.pacingAnalysis ? JSON.parse(r.analysis.pacingAnalysis) : null,
       fitnessProfile: r.analysis.fitnessProfile ? JSON.parse(r.analysis.fitnessProfile) : null,
       recommendations: r.analysis.recommendations ? JSON.parse(r.analysis.recommendations) : null,
+      energySystemAnalysis: r.analysis.energySystemAnalysis ? JSON.parse(r.analysis.energySystemAnalysis) : null,
+      muscleFatigueAnalysis: r.analysis.muscleFatigueAnalysis ? JSON.parse(r.analysis.muscleFatigueAnalysis) : null,
     };
 
     res.json({

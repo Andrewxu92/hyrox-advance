@@ -2,11 +2,12 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Activity, User, BarChart3, Home, Users } from 'lucide-react';
+import { Menu, X, Activity, User, BarChart3, Home, Users, Calculator } from 'lucide-react';
 import HomePage from './pages/Home';
 import Analysis from './pages/Analysis';
 import MyResults from './pages/MyResults';
 import Athletes from './pages/Athletes';
+import PaceCalculator from './pages/PaceCalculator';
 
 type NavItem = {
   path: string;
@@ -18,6 +19,7 @@ const navItems: NavItem[] = [
   { path: '/', label: '首页', Icon: Home },
   { path: '/my-results', label: '我的成绩', Icon: User },
   { path: '/athletes', label: '运动员', Icon: Users },
+  { path: '/pace-calculator', label: '配速计算', Icon: Calculator },
   { path: '/analysis', label: '成绩分析', Icon: BarChart3 },
 ];
 
@@ -238,6 +240,14 @@ function AppContent() {
               element={
                 <AnimatedPage>
                   <Athletes />
+                </AnimatedPage>
+              } 
+            />
+            <Route 
+              path="/pace-calculator" 
+              element={
+                <AnimatedPage>
+                  <PaceCalculator />
                 </AnimatedPage>
               } 
             />

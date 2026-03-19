@@ -138,7 +138,7 @@ export async function initializeDatabase(): Promise<boolean> {
     database.run(sql`
       CREATE TABLE IF NOT EXISTS analysis_reports (
         id TEXT PRIMARY KEY,
-        result_id TEXT NOT NULL REFERENCES results(id),
+        result_id TEXT REFERENCES results(id),
         athlete_id TEXT NOT NULL REFERENCES athletes(id),
         overall_score INTEGER,
         level TEXT,
@@ -148,6 +148,8 @@ export async function initializeDatabase(): Promise<boolean> {
         fitness_profile TEXT,
         recommendations TEXT,
         ai_summary TEXT,
+        energy_system_analysis TEXT,
+        muscle_fatigue_analysis TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       )
     `);
@@ -185,6 +187,23 @@ export async function initializeDatabase(): Promise<boolean> {
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       )
     `);
+    
+    database.run(sql`
+      CREATE TABLE IF NOT EXISTS scrape_cache (
+        url TEXT PRIMARY KEY,
+        data TEXT NOT NULL,
+        timestamp INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL
+      )
+    `);
+    
+    // 为已有数据库添加进阶分析列（若表已存在且无该列）
+    try {
+      database.run(sql`ALTER TABLE analysis_reports ADD COLUMN energy_system_analysis TEXT`);
+    } catch (_) { /* column may already exist */ }
+    try {
+      database.run(sql`ALTER TABLE analysis_reports ADD COLUMN muscle_fatigue_analysis TEXT`);
+    } catch (_) { /* column may already exist */ }
     
     // 创建索引（优化查询性能）
     database.run(sql`CREATE INDEX IF NOT EXISTS idx_results_athlete ON results(athlete_id)`);

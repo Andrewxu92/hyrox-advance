@@ -19,6 +19,7 @@ import athletesRoutes from './routes/athletes.js';
 import resultsRoutes from './routes/results.js';
 import historyRoutes from './routes/history.js';
 import exportRoutes from './routes/export.js';
+import paceCalculatorRoutes from './routes/pace-calculator.js';
 
 // Load environment variables
 dotenv.config();
@@ -47,11 +48,12 @@ const scrapeLimit = rateLimit({
   legacyHeaders: false,
 });
 
-// Middleware
+// Middleware - production: use ALLOWED_ORIGINS whitelist; development: allow all
+const corsOrigin = process.env.NODE_ENV === 'production'
+  ? (process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || true)
+  : true;
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? true
-    : true,
+  origin: corsOrigin,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -76,6 +78,7 @@ app.use('/api/training', trainingRoutes);
 app.use('/api/scrape', scrapeLimit, scraperRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/pace-calculator', paceCalculatorRoutes);
 
 // Error handling: never leak error details to client in production
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -152,6 +155,8 @@ async function startServer() {
       console.log(`   - GET  /api/history/statistics`);
       console.log(`   - GET  /api/export/json`);
       console.log(`   - GET  /api/export/csv`);
+      console.log(`   - POST /api/pace-calculator/target-splits`);
+      console.log(`   - POST /api/pace-calculator/estimate`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
