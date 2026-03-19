@@ -54,14 +54,14 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-64 bg-white shadow-2xl z-50 lg:hidden"
+            className="fixed right-0 top-0 h-full w-64 bg-hyrox-gray-mid shadow-2xl z-50 lg:hidden border-l border-white/10"
             role="navigation"
             aria-label="主导航菜单"
           >
             <div className="p-4">
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-3 min-h-[44px] min-w-[44px] text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="absolute top-4 right-4 p-3 min-h-[44px] min-w-[44px] text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition"
                 aria-label="关闭菜单"
               >
                 <X className="w-6 h-6" />
@@ -91,8 +91,8 @@ function MobileNavLink({ item, onClick }: { item: NavItem; onClick: () => void }
       onClick={onClick}
       className={`flex items-center gap-3 px-4 py-4 min-h-[44px] rounded-lg transition ${
         isActive 
-          ? 'bg-orange-50 text-orange-600 font-medium' 
-          : 'text-gray-600 hover:bg-gray-50'
+          ? 'bg-hyrox-red/20 text-hyrox-red-light font-medium' 
+          : 'text-gray-300 hover:bg-white/5'
       }`}
       aria-label={item.label}
       aria-current={isActive ? 'page' : undefined}
@@ -110,14 +110,14 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const isActive = (path: string) => location.pathname === path;
   
   return (
-    <header className="bg-gray-900 text-white py-4 sm:py-6 sticky top-0 z-30 shadow-lg">
+    <header className="bg-hyrox-black text-white py-4 sm:py-6 sticky top-0 z-30 shadow-lg border-b border-white/5">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
-        <Link to="/" className="hover:opacity-80 transition">
+        <Link to="/" className="hover:opacity-90 transition">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <h1 className="text-xl sm:text-3xl font-bold text-orange-500">HYROX 进阶</h1>
+            <h1 className="text-xl sm:text-3xl font-bold text-hyrox-red">HYROX 进阶</h1>
             <p className="text-gray-400 mt-0.5 text-xs sm:text-base hidden sm:block">
               AI 成绩分析 · 个性化训练方案
             </p>
@@ -153,7 +153,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
       to={item.path}
       className={`flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg transition ${
         isActive 
-          ? 'text-orange-500 font-medium' 
+          ? 'text-hyrox-red font-medium' 
           : 'text-gray-300 hover:text-white hover:bg-white/10'
       }`}
       aria-current={isActive ? 'page' : undefined}
@@ -169,7 +169,7 @@ function MobileTabBar() {
   const location = useLocation();
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40 safe-area-bottom" role="navigation" aria-label="底部导航">
+    <nav className="fixed bottom-0 left-0 right-0 bg-hyrox-gray-mid border-t border-white/10 lg:hidden z-40 safe-area-bottom" role="navigation" aria-label="底部导航">
       <div className="flex justify-around items-center h-16">
         {navItems.map((tab) => {
           const isActive = location.pathname === tab.path;
@@ -180,7 +180,7 @@ function MobileTabBar() {
               key={tab.path}
               to={tab.path}
               className={`flex flex-col items-center justify-center flex-1 h-full transition ${
-                isActive ? 'text-orange-500' : 'text-gray-500'
+                isActive ? 'text-hyrox-red' : 'text-gray-400'
               }`}
               aria-label={tab.label}
               aria-current={isActive ? 'page' : undefined}
@@ -210,7 +210,7 @@ function AppContent() {
   }, [location]);
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-950">
       <Header onMenuClick={() => setMobileNavOpen(true)} />
       <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
       
@@ -255,18 +255,18 @@ function AppContent() {
 
       <MobileTabBar />
 
-      {/* Footer */}
-      <footer className="bg-gray-100 py-6 mt-12 hidden lg:block">
+      {/* Footer - HYROX 官网风格 */}
+      <footer className="bg-hyrox-black border-t border-white/5 py-6 mt-12 hidden lg:block">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-orange-500" />
-              <span className="font-semibold">HYROX 进阶</span>
+              <Activity className="w-5 h-5 text-hyrox-red" />
+              <span className="font-semibold text-white">HYROX 进阶</span>
             </div>
-            <p className="text-gray-500 text-sm text-center">
+            <p className="text-gray-400 text-sm text-center">
               HYROX 进阶 - 让每一次训练都更有针对性
             </p>
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-500 text-sm">
               © 2024 All rights reserved
             </div>
           </div>

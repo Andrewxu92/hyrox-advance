@@ -364,7 +364,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
             onClick={() => setMode('quick')}
             className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
               mode === 'quick' 
-                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg' 
+                ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg' 
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
             aria-pressed={mode === 'quick'}
@@ -376,7 +376,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
             onClick={() => setMode('scrape')}
             className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
               mode === 'scrape' 
-                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg' 
+                ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg' 
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
             aria-pressed={mode === 'scrape'}
@@ -393,7 +393,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="flex-1 py-3 text-sm text-orange-400 bg-orange-500/10 rounded-lg hover:bg-orange-500/20 transition"
+              className="flex-1 py-3 text-sm text-hyrox-red-light bg-hyrox-red/10 rounded-lg hover:bg-hyrox-red/20 transition"
               aria-expanded={showHistory}
             >
               <History className="w-4 h-4 inline mr-1" />
@@ -439,7 +439,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => loadFromHistory(record)}
-                  className="w-full text-left p-3 bg-gray-800/50 rounded-lg hover:bg-orange-500/10 transition"
+                  className="w-full text-left p-3 bg-gray-800/50 rounded-lg hover:bg-hyrox-red/10 transition"
                 >
                   <div className="flex justify-between items-center">
                     <div>
@@ -455,7 +455,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                     </span>
                   </div>
                   {record.totalTime && (
-                    <div className="text-sm text-orange-400 mt-1">
+                    <div className="text-sm text-hyrox-red-light mt-1">
                       总成绩: {record.totalTime}
                     </div>
                   )}
@@ -485,7 +485,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
             {apiError.retryable && (
               <button
                 onClick={clearError}
-                className="flex items-center justify-center gap-2 text-sm text-orange-400 hover:text-orange-300 py-2"
+                className="flex items-center justify-center gap-2 text-sm text-hyrox-red-light hover:text-gray-300 py-2"
               >
                 <RefreshCw className="w-4 h-4" />
                 重试
@@ -502,7 +502,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
             {/* 总成绩 - 使用时间选择器 */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
-                <Timer className="w-4 h-4 text-orange-500" />
+                <Timer className="w-4 h-4 text-hyrox-red" />
                 你的HYROX总成绩 *
               </label>
               <TimeSelector
@@ -539,7 +539,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                 <select
                   value={quickInput.strongestStation}
                   onChange={(e) => setQuickInput({ ...quickInput, strongestStation: e.target.value })}
-                  className="w-full px-3 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-orange-500 transition-colors text-white"
+                  className="w-full px-3 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-hyrox-red transition-colors text-white"
                 >
                   <option value="">选择...</option>
                   {stations.map(s => (
@@ -554,7 +554,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                 <select
                   value={quickInput.weakestStation}
                   onChange={(e) => setQuickInput({ ...quickInput, weakestStation: e.target.value })}
-                  className="w-full px-3 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-orange-500 transition-colors text-white"
+                  className="w-full px-3 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-hyrox-red transition-colors text-white"
                 >
                   <option value="">选择...</option>
                   {stations.map(s => (
@@ -571,7 +571,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                 <select
                   value={athleteInfo.gender}
                   onChange={(e) => setAthleteInfo({ ...athleteInfo, gender: e.target.value as 'male' | 'female' })}
-                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-orange-500"
+                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-hyrox-red"
                 >
                   <option value="male">男</option>
                   <option value="female">女</option>
@@ -584,7 +584,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   value={athleteInfo.age}
                   onChange={(e) => setAthleteInfo({ ...athleteInfo, age: e.target.value })}
                   placeholder="30"
-                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-orange-500"
+                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-hyrox-red"
                 />
               </div>
               <div>
@@ -594,7 +594,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   value={athleteInfo.weight}
                   onChange={(e) => setAthleteInfo({ ...athleteInfo, weight: e.target.value })}
                   placeholder="70"
-                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-orange-500"
+                  className="w-full px-2 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:border-hyrox-red"
                 />
               </div>
             </div>
@@ -628,7 +628,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="姓名或拼音"
-                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-orange-500 text-white"
+                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-hyrox-red text-white"
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   aria-label="搜索选手姓名"
                 />
@@ -661,7 +661,7 @@ function ResultInput({ onAnalysis }: ResultInputProps) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
                         onClick={() => handleSelectResult(result)}
-                        className="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-orange-500/10 transition"
+                        className="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-hyrox-red/10 transition"
                       >
                         <div className="flex justify-between items-center">
                           <span className="font-medium text-white">{result.name}</span>

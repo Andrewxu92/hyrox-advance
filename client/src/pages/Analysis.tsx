@@ -93,10 +93,10 @@ function Analysis() {
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 mb-4"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-hyrox-red/10 border border-hyrox-red/30 mb-4"
                 >
-                  <Timer className="w-4 h-4 text-orange-500" />
-                  <span className="text-orange-400 text-sm font-medium">成绩分析</span>
+                  <Timer className="w-4 h-4 text-hyrox-red" />
+                  <span className="text-hyrox-red-light text-sm font-medium">成绩分析</span>
                 </motion.div>
                 
                 <motion.h2
@@ -123,7 +123,7 @@ function Analysis() {
                     onClick={() => setInputMode('quick')}
                     className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                       inputMode === 'quick' 
-                        ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg' 
+                        ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg' 
                         : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                     aria-pressed={inputMode === 'quick'}
@@ -135,7 +135,7 @@ function Analysis() {
                     onClick={() => setInputMode('detailed')}
                     className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                       inputMode === 'detailed' 
-                        ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg' 
+                        ? 'bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white shadow-lg' 
                         : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                     aria-pressed={inputMode === 'detailed'}
@@ -181,14 +181,14 @@ function Analysis() {
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-hyrox-red to-hyrox-red-dark flex items-center justify-center">
                           <Activity className="w-5 h-5 text-white" />
                         </div>
                         <h2 className="text-xl sm:text-2xl font-bold text-white">分析结果</h2>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
                         <span>总用时:</span>
-                        <span className="font-bold text-lg text-orange-400">{analysis.formattedTotalTime}</span>
+                        <span className="font-bold text-lg text-hyrox-red-light">{analysis.formattedTotalTime}</span>
                         <span className="text-gray-600">•</span>
                         <span>水平:</span>
                         {getLevelBadge(analysis.level)}
@@ -218,7 +218,7 @@ function Analysis() {
                     whileTap={{ scale: 0.98 }}
                     className={`px-4 py-3 font-medium transition flex items-center gap-2 ${
                       activeTab === 'report' 
-                        ? 'text-orange-500 border-b-2 border-orange-500' 
+                        ? 'text-hyrox-red border-b-2 border-hyrox-red' 
                         : 'text-gray-400 hover:text-gray-300'
                     }`}
                     role="tab"
@@ -233,7 +233,7 @@ function Analysis() {
                     whileTap={{ scale: 0.98 }}
                     className={`px-4 py-3 font-medium transition flex items-center gap-2 ${
                       activeTab === 'chart' 
-                        ? 'text-orange-500 border-b-2 border-orange-500' 
+                        ? 'text-hyrox-red border-b-2 border-hyrox-red' 
                         : 'text-gray-400 hover:text-gray-300'
                     }`}
                     role="tab"

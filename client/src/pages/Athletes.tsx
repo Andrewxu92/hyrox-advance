@@ -122,7 +122,7 @@ export default function AthletesPage() {
     <div className="max-w-6xl mx-auto px-4 py-6">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <User className="w-8 h-8 text-orange-500" />
+          <User className="w-8 h-8 text-hyrox-red" />
           运动员管理
         </h2>
         <p className="text-gray-500 mt-1">管理您的运动员数据和成绩记录</p>
@@ -147,7 +147,7 @@ export default function AthletesPage() {
                 placeholder="搜索运动员..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hyrox-red"
               />
             </div>
             <button
@@ -155,7 +155,7 @@ export default function AthletesPage() {
                 setEditingAthlete({ id: '', name: '', gender: 'male' });
                 setShowAddForm(true);
               }}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
+              className="bg-hyrox-red hover:bg-hyrox-red-dark text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
             >
               <Plus className="w-4 h-4" />
               <span>新建</span>
@@ -166,7 +166,7 @@ export default function AthletesPage() {
           <div className="bg-white rounded-lg shadow border border-gray-200">
             {loading && !athletes.length ? (
               <div className="p-8 text-center text-gray-500">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-3"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hyrox-red mx-auto mb-3"></div>
                 加载中...
               </div>
             ) : filteredAthletes.length === 0 ? (
@@ -180,7 +180,7 @@ export default function AthletesPage() {
                   <div
                     key={athlete.id}
                     className={`p-4 hover:bg-gray-50 transition cursor-pointer ${
-                      selectedAthlete?.id === athlete.id ? 'bg-orange-50' : ''
+                      selectedAthlete?.id === athlete.id ? 'bg-hyrox-red/10' : ''
                     }`}
                     onClick={() => setSelectedAthlete(athlete)}
                   >
@@ -205,7 +205,7 @@ export default function AthletesPage() {
                             setEditingAthlete(athlete);
                             setShowAddForm(true);
                           }}
-                          className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded transition"
+                          className="p-1.5 text-gray-400 hover:text-hyrox-red hover:bg-hyrox-red/10 rounded transition"
                           title="编辑"
                         >
                           <Edit className="w-4 h-4" />
@@ -282,7 +282,7 @@ export default function AthletesPage() {
 
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Trophy className="w-5 h-5 text-orange-500" />
+                  <Trophy className="w-5 h-5 text-hyrox-red" />
                   <h4 className="font-semibold text-gray-800">目标时间</h4>
                 </div>
                 {selectedAthlete.targetTime ? (
@@ -383,7 +383,7 @@ function AthleteForm({
           required
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hyrox-red"
           placeholder="请输入运动员姓名"
         />
       </div>
@@ -430,7 +430,7 @@ function AthleteForm({
           max="120"
           value={formData.age || ''}
           onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) || undefined })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hyrox-red"
           placeholder="例如：30"
         />
       </div>
@@ -447,7 +447,7 @@ function AthleteForm({
           step="0.1"
           value={formData.weight || ''}
           onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || undefined })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hyrox-red"
           placeholder="例如：75"
         />
       </div>
@@ -463,7 +463,7 @@ function AthleteForm({
           max="250"
           value={formData.height || ''}
           onChange={(e) => setFormData({ ...formData, height: parseFloat(e.target.value) || undefined })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hyrox-red"
           placeholder="例如：180"
         />
       </div>
@@ -476,7 +476,7 @@ function AthleteForm({
         <select
           value={formData.experienceLevel || 'none'}
           onChange={(e) => setFormData({ ...formData, experienceLevel: e.target.value as any })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hyrox-red"
         >
           <option value="none">新手 (无经验)</option>
           <option value="beginner">初级</option>
@@ -496,7 +496,7 @@ function AthleteForm({
           min="1"
           value={formData.targetTime || ''}
           onChange={(e) => setFormData({ ...formData, targetTime: parseInt(e.target.value) || undefined })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hyrox-red"
           placeholder="例如：5400 (90分钟)"
         />
         <p className="text-xs text-gray-500 mt-1">
@@ -508,7 +508,7 @@ function AthleteForm({
       <div className="flex gap-3 pt-4">
         <button
           type="submit"
-          className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2.5 px-4 rounded-lg font-medium transition"
+          className="flex-1 bg-hyrox-red hover:bg-hyrox-red-dark text-white py-2.5 px-4 rounded-lg font-medium transition"
         >
           保存
         </button>

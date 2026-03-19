@@ -117,7 +117,7 @@ export function StepWizard({
             <span className="text-sm text-gray-500">
               步骤 {currentStep + 1} / {steps.length}
             </span>
-            <span className="text-sm font-medium text-orange-600">
+            <span className="text-sm font-medium text-hyrox-red-dark">
               {Math.round(progress)}%
             </span>
           </div>
@@ -139,7 +139,7 @@ export function StepWizard({
                 disabled={!isClickable || isLoading}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 min-h-[44px] ${
                   isActive
-                    ? 'bg-orange-100 text-orange-700 ring-2 ring-orange-500'
+                    ? 'bg-hyrox-red/20 text-hyrox-red-dark ring-2 ring-hyrox-red'
                     : isCompleted
                     ? 'bg-green-100 text-green-700'
                     : 'bg-gray-100 text-gray-400'
@@ -155,7 +155,7 @@ export function StepWizard({
                   )}
                 </span>
                 <span className={`hidden sm:inline text-sm font-medium whitespace-nowrap ${
-                  isActive ? 'text-orange-700' : ''
+                  isActive ? 'text-hyrox-red-dark' : ''
                 }`}>
                   {step.title}
                 </span>
@@ -202,7 +202,7 @@ export function StepWizard({
               {/* Step header */}
               <div className="mb-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-orange-100 rounded-lg">
+                  <div className="p-2 bg-hyrox-red/10 rounded-lg">
                     {steps[currentStep].icon}
                   </div>
                   <div>
@@ -241,7 +241,7 @@ export function StepWizard({
         <button
           onClick={handleNext}
           disabled={isLoading}
-          className="flex items-center gap-2 px-6 py-3 min-h-[44px] bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium rounded-lg hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-3 min-h-[44px] bg-gradient-to-r from-hyrox-red to-hyrox-red-dark text-white font-medium rounded-lg hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>

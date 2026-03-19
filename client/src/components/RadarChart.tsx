@@ -139,7 +139,7 @@ export default function RadarChartComponent({ weaknesses, strengths }: RadarChar
         className="flex justify-center gap-4 mt-2"
       >
         <div className="flex items-center gap-2 text-xs text-gray-500">
-          <div className="w-3 h-3 rounded-full bg-orange-500/30 border-2 border-orange-500"></div>
+          <div className="w-3 h-3 rounded-full bg-hyrox-red/30 border-2 border-hyrox-red"></div>
           <span>您的表现</span>
         </div>
       </motion.div>

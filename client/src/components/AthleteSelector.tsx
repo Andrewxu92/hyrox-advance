@@ -62,7 +62,7 @@ export default function AthleteSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
-        <User className="w-5 h-5 text-orange-500" />
+        <User className="w-5 h-5 text-hyrox-red" />
         <h3 className="text-lg font-semibold text-gray-800">运动员</h3>
       </div>
 
@@ -74,7 +74,7 @@ export default function AthleteSelector({
           placeholder="搜索运动员..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-hyrox-red focus:border-transparent"
         />
       </div>
 
@@ -88,7 +88,7 @@ export default function AthleteSelector({
       {/* 加载状态 */}
       {loading && (
         <div className="flex items-center justify-center p-8 text-gray-500">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hyrox-red"></div>
         </div>
       )}
 
@@ -110,7 +110,7 @@ export default function AthleteSelector({
                 onClick={() => handleSelect(athlete)}
                 className={`w-full p-3 rounded-lg transition ${
                   currentAthleteId === athlete.id
-                    ? 'bg-orange-50 border-2 border-orange-500'
+                    ? 'bg-hyrox-red/10 border-2 border-hyrox-red'
                     : 'bg-white border border-gray-200 hover:bg-gray-50'
                 }`}
               >
@@ -129,7 +129,7 @@ export default function AthleteSelector({
                     </div>
                   </div>
                   {currentAthleteId === athlete.id && (
-                    <span className="text-orange-500 text-sm font-medium">已选择</span>
+                    <span className="text-hyrox-red text-sm font-medium">已选择</span>
                   )}
                 </div>
               </button>

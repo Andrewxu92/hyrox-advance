@@ -32,10 +32,11 @@ router.post('/url', async (req, res) => {
     });
   } catch (error) {
     console.error('Scrape URL error:', error);
+    const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       success: false,
       error: 'Failed to scrape data from URL',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      ...(isDev && { message: error instanceof Error ? error.message : 'Unknown error' })
     });
   }
 });
@@ -69,10 +70,11 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Scrape error:', error);
+    const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       success: false,
       error: 'Failed to scrape data',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      ...(isDev && { message: error instanceof Error ? error.message : 'Unknown error' })
     });
   }
 });

@@ -114,7 +114,7 @@ function TimeSelector({
               className={`
                 appearance-none bg-gray-800 border-2 border-gray-700 rounded-xl
                 text-white text-center cursor-pointer
-                focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20
+                focus:border-hyrox-red focus:ring-2 focus:ring-hyrox-red/20
                 hover:border-gray-600 transition-all
                 ${styles.select}
                 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
@@ -147,7 +147,7 @@ function TimeSelector({
               className={`
                 appearance-none bg-gray-800 border-2 border-gray-700 rounded-xl
                 text-white text-center cursor-pointer
-                focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20
+                focus:border-hyrox-red focus:ring-2 focus:ring-hyrox-red/20
                 hover:border-gray-600 transition-all
                 ${styles.select}
                 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
@@ -180,7 +180,7 @@ function TimeSelector({
               className={`
                 appearance-none bg-gray-800 border-2 border-gray-700 rounded-xl
                 text-white text-center cursor-pointer
-                focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20
+                focus:border-hyrox-red focus:ring-2 focus:ring-hyrox-red/20
                 hover:border-gray-600 transition-all
                 ${styles.select}
                 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
@@ -231,7 +231,7 @@ export function TimeSelectorCompact({
         value={hours}
         onChange={(e) => handleChange('h', parseInt(e.target.value))}
         disabled={disabled}
-        className="w-14 py-1.5 px-1 text-center bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-orange-500"
+        className="w-14 py-1.5 px-1 text-center bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-hyrox-red"
       >
         {Array.from({ length: 3 }, (_, i) => (
           <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>
@@ -242,7 +242,7 @@ export function TimeSelectorCompact({
         value={minutes}
         onChange={(e) => handleChange('m', parseInt(e.target.value))}
         disabled={disabled}
-        className="w-14 py-1.5 px-1 text-center bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-orange-500"
+        className="w-14 py-1.5 px-1 text-center bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-hyrox-red"
       >
         {Array.from({ length: 60 }, (_, i) => (
           <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>
@@ -253,7 +253,7 @@ export function TimeSelectorCompact({
         value={seconds}
         onChange={(e) => handleChange('s', parseInt(e.target.value))}
         disabled={disabled}
-        className="w-14 py-1.5 px-1 text-center bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-orange-500"
+        className="w-14 py-1.5 px-1 text-center bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-hyrox-red"
       >
         {Array.from({ length: 60 }, (_, i) => (
           <option key={i} value={i}>{i.toString().padStart(2, '0')}</option>

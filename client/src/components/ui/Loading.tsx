@@ -75,7 +75,7 @@ export function LoadingOverlay({ message = '加载中...', subMessage, visible }
         <div className="flex justify-center mb-4">
           <div className="relative">
             <motion.div
-              className="w-16 h-16 border-4 border-orange-200 rounded-full"
+              className="w-16 h-16 border-4 border-hyrox-red/30 rounded-full"
               animate={{ rotate: 360 }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
               style={{ borderTopColor: '#f97316' }}
@@ -124,7 +124,7 @@ export function ProgressBar({ progress, message, className = '' }: ProgressBarPr
       )}
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
         <motion.div
-          className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
+          className="h-full bg-gradient-to-r from-hyrox-red to-hyrox-red-dark rounded-full"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -302,7 +302,7 @@ export function AnalysisLoadingOverlay({
             {/* 步骤连接线 */}
             <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -translate-y-1/2 z-0">
               <motion.div 
-                className="h-full bg-gradient-to-r from-orange-400 to-orange-600"
+                className="h-full bg-gradient-to-r from-hyrox-red-light to-hyrox-red-dark"
                 initial={{ width: '0%' }}
                 animate={{ width: `${((currentStep - 1) / (ANALYSIS_STEPS.length - 1)) * 100}%` }}
                 transition={{ duration: 0.5 }}
@@ -327,7 +327,7 @@ export function AnalysisLoadingOverlay({
                       isCompleted
                         ? 'bg-green-500 text-white'
                         : isActive
-                        ? 'bg-orange-500 text-white ring-4 ring-orange-200'
+                        ? 'bg-hyrox-red text-white ring-4 ring-hyrox-red/30'
                         : 'bg-gray-100 text-gray-400'
                     }`}
                   >
@@ -335,7 +335,7 @@ export function AnalysisLoadingOverlay({
                   </div>
                   <span
                     className={`text-xs mt-2 font-medium transition-colors duration-300 ${
-                      isActive ? 'text-orange-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                      isActive ? 'text-hyrox-red-dark' : isCompleted ? 'text-green-600' : 'text-gray-400'
                     }`}
                   >
                     {step.name}
@@ -351,9 +351,9 @@ export function AnalysisLoadingOverlay({
           key={currentStep}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-orange-50 rounded-xl p-3 mb-4"
+          className="bg-hyrox-red/10 rounded-xl p-3 mb-4"
         >
-          <p className="text-sm text-orange-700 font-medium">
+          <p className="text-sm text-hyrox-red-dark font-medium">
             {ANALYSIS_STEPS[currentStep - 1]?.description}
           </p>
         </motion.div>

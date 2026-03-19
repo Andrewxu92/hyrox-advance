@@ -15,7 +15,7 @@ function Home() {
       title: '获取你的成绩',
       description: '输入姓名，自动从官网抓取所有历史比赛成绩',
       icon: Search,
-      color: 'from-orange-500 to-red-500',
+      color: 'from-hyrox-red to-hyrox-red-dark',
     },
     {
       number: '02',
@@ -69,7 +69,7 @@ function Home() {
       <section className="relative overflow-hidden py-16 sm:py-24">
         {/* 背景装饰 */}
         <div className="absolute inset-0 grid-bg opacity-50"></div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-orange-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-hyrox-red/10 rounded-full blur-3xl"></div>
         
         <div className="relative max-w-6xl mx-auto px-4">
           <div className="text-center">
@@ -77,10 +77,10 @@ function Home() {
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20 mb-6"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-hyrox-red/10 border border-hyrox-red/30 mb-6"
             >
-              <Flame className="w-5 h-5 text-orange-500" />
-              <span className="text-orange-400 font-medium">HYROX 进阶训练系统</span>
+              <Flame className="w-5 h-5 text-hyrox-red" />
+              <span className="text-hyrox-red-light font-medium">HYROX 进阶训练系统</span>
             </motion.div>
 
             {/* 主标题 */}
@@ -91,7 +91,7 @@ function Home() {
               className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6"
             >
               追踪你的
-              <span className="block mt-2 bg-gradient-to-r from-orange-400 via-red-400 to-orange-500 bg-clip-text text-transparent">
+              <span className="block mt-2 bg-gradient-to-r from-hyrox-red-light via-hyrox-red to-hyrox-red-dark bg-clip-text text-transparent">
                 HYROX 进步轨迹
               </span>
             </motion.h1>
@@ -128,7 +128,7 @@ function Home() {
                 onClick={() => navigate('/analysis')}
                 className="btn-secondary px-8 py-4 rounded-xl text-lg font-medium flex items-center justify-center gap-2"
               >
-                <Zap className="w-5 h-5 text-orange-500" />
+                <Zap className="w-5 h-5 text-hyrox-red" />
                 快速分析
               </button>
             </motion.div>
@@ -162,7 +162,7 @@ function Home() {
           >
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               三步提升你的
-              <span className="text-orange-500">HYROX成绩</span>
+              <span className="text-hyrox-red">HYROX成绩</span>
             </h2>
             <p className="text-gray-400">专业运动分析，科学训练指导</p>
           </motion.div>
@@ -188,7 +188,7 @@ function Home() {
                 <p className="text-gray-400 text-sm">{step.description}</p>
 
                 {/* 步骤指示器 */}
-                <div className="mt-4 flex items-center gap-2 text-orange-500">
+                <div className="mt-4 flex items-center gap-2 text-hyrox-red">
                   <span className="text-sm font-medium">开始</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
@@ -201,7 +201,7 @@ function Home() {
       {/* 功能区域 */}
       <section className="py-16 sm:py-24 relative overflow-hidden">
         {/* 背景 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/5 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-hyrox-red/5 to-transparent"></div>
         
         <div className="relative max-w-5xl mx-auto px-4">
           <motion.div
@@ -226,8 +226,8 @@ function Home() {
                 transition={{ delay: idx * 0.1 }}
                 className="sport-card p-6 text-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-500/10 mb-4">
-                  <feature.Icon className="w-8 h-8 text-orange-500" />
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-hyrox-red/20 to-hyrox-red/10 mb-4">
+                  <feature.Icon className="w-8 h-8 text-hyrox-red" />
                 </div>
                 
                 <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
@@ -254,11 +254,11 @@ function Home() {
             className="sport-card p-8 sm:p-12 text-center relative overflow-hidden"
           >
             {/* 装饰 */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-red-500 to-orange-500"></div>
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/20 rounded-full blur-3xl"></div>
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-hyrox-red via-hyrox-red-light to-hyrox-red"></div>
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-hyrox-red/20 rounded-full blur-3xl"></div>
             
             <div className="relative">
-              <Timer className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+              <Timer className="w-12 h-12 text-hyrox-red mx-auto mb-4" />
               
               <h2 className="text-2xl sm:text-3xl font-bold mb-4">
                 开始追踪你的进步

@@ -57,10 +57,11 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Analysis route error:', error);
+    const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       success: false,
       error: 'Failed to generate analysis',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      ...(isDev && { message: error instanceof Error ? error.message : 'Unknown error' })
     });
   }
 });

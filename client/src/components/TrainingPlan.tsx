@@ -143,7 +143,7 @@ export default function TrainingPlan({ level: _level, weaknesses, strengths: _st
     switch(type) {
       case 'strength': return 'bg-blue-100 text-blue-700';
       case 'endurance': return 'bg-green-100 text-green-700';
-      case 'combined': return 'bg-orange-100 text-orange-700';
+      case 'combined': return 'bg-hyrox-red/20 text-hyrox-red-dark';
       case 'mock': return 'bg-purple-100 text-purple-700';
       case 'skill': return 'bg-yellow-100 text-yellow-700';
       case 'rest': return 'bg-gray-100 text-gray-500';
@@ -214,7 +214,7 @@ export default function TrainingPlan({ level: _level, weaknesses, strengths: _st
                   whileTap={{ scale: 0.95 }}
                   className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg font-semibold text-sm sm:text-base transition-colors ${
                     activeWeek === w.week 
-                      ? 'bg-orange-500 text-white shadow-md' 
+                      ? 'bg-hyrox-red text-white shadow-md' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >

@@ -119,32 +119,36 @@ hyrox-advance/
 ## 本地运行
 
 ### 1. 安装依赖
+在项目根目录执行：
 ```bash
-cd /home/admin/openclaw/workspace/hyrox-advance
 npm install
 cd client
 npm install
+cd ..
 ```
 
 ### 2. 配置环境变量
-创建 `.env` 文件：
+在项目根目录创建 `.env` 文件（可复制 `.env.example` 后修改）：
 ```
-PORT=5001
+PORT=5000
 NODE_ENV=development
+
+# AI 分析必填其一
 OPENAI_API_KEY=sk-your-openai-api-key-here
+# 或 DASHSCOPE_API_KEY=your-dashscope-api-key-here
 ```
 
 ### 3. 启动后端
 ```bash
 npm run dev
-# 服务器运行在 http://localhost:5001
+# 服务器运行在 http://localhost:5000
 ```
 
 ### 4. 启动前端（新终端）
 ```bash
 cd client
 npm run dev
-# 前端运行在 http://localhost:5173
+# 前端运行在 http://localhost:5173，并代理 /api 到后端
 ```
 
 ### 5. 访问应用

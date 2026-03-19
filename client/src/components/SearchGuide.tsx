@@ -87,7 +87,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
             onClick={() => setActiveTab('search')}
             className={`flex-1 py-3 text-sm font-medium transition ${
               activeTab === 'search'
-                ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50'
+                ? 'text-hyrox-red-dark border-b-2 border-hyrox-red bg-hyrox-red/10'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -100,7 +100,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
             onClick={() => setActiveTab('url')}
             className={`flex-1 py-3 text-sm font-medium transition ${
               activeTab === 'url'
-                ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50'
+                ? 'text-hyrox-red-dark border-b-2 border-hyrox-red bg-hyrox-red/10'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -128,7 +128,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
                       setError('');
                     }}
                     placeholder="姓名 / 拼音 / 英文名"
-                    className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0"
+                    className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-hyrox-red focus:ring-0"
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   />
                   {searchName && (
@@ -143,7 +143,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
                 <button
                   onClick={handleSearch}
                   disabled={loading}
-                  className="bg-orange-500 text-white px-5 py-3 rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 flex items-center gap-2"
+                  className="bg-hyrox-red text-white px-5 py-3 rounded-xl font-medium hover:bg-hyrox-red-dark transition disabled:opacity-50 flex items-center gap-2"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                 </button>
@@ -155,7 +155,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
                 支持中文、拼音、英文名
                 <button 
                   onClick={() => setShowTips(!showTips)}
-                  className="text-orange-500 hover:underline ml-1"
+                  className="text-hyrox-red hover:underline ml-1"
                 >
                   {showTips ? '隐藏' : '查看更多'}
                 </button>
@@ -200,7 +200,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
                       setUrlError('');
                     }}
                     placeholder="https://www.hyresult.com/result/..."
-                    className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-0"
+                    className="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-xl focus:border-hyrox-red focus:ring-0"
                     onKeyPress={(e) => e.key === 'Enter' && handleUrlSubmit()}
                   />
                   {resultUrl && (
@@ -215,7 +215,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
                 <button
                   onClick={handleUrlSubmit}
                   disabled={loading}
-                  className="bg-orange-500 text-white px-5 py-3 rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50 flex items-center gap-2"
+                  className="bg-hyrox-red text-white px-5 py-3 rounded-xl font-medium hover:bg-hyrox-red-dark transition disabled:opacity-50 flex items-center gap-2"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '获取'}
                 </button>
@@ -224,7 +224,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
               <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-gray-600">
                 <p className="font-medium text-blue-800 mb-1">💡 如何获取链接？</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>访问 <a href="https://www.hyresult.com" target="_blank" className="text-orange-500 underline">hyresult.com</a></li>
+                  <li>访问 <a href="https://www.hyresult.com" target="_blank" className="text-hyrox-red underline">hyresult.com</a></li>
                   <li>搜索你的名字并进入比赛结果页面</li>
                   <li>复制浏览器地址栏的链接</li>
                   <li>粘贴到上方输入框</li>
@@ -253,17 +253,17 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
         
         <div className="space-y-3">
           <div className="flex items-start gap-3 text-sm">
-            <span className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+            <span className="w-6 h-6 bg-hyrox-red/20 text-hyrox-red-dark rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
             <div>
               <span className="font-medium">去官网确认</span>
               <p className="text-gray-500 text-xs mt-1">
-                访问 <a href="https://www.hyresult.com/rankings" target="_blank" className="text-orange-500 underline">hyresult.com</a> 查看你注册时用的姓名
+                访问 <a href="https://www.hyresult.com/rankings" target="_blank" className="text-hyrox-red underline">hyresult.com</a> 查看你注册时用的姓名
               </p>
             </div>
           </div>
           
           <div className="flex items-start gap-3 text-sm">
-            <span className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+            <span className="w-6 h-6 bg-hyrox-red/20 text-hyrox-red-dark rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
             <div>
               <span className="font-medium">尝试不同格式</span>
               <div className="flex flex-wrap gap-2 mt-1">
@@ -271,7 +271,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
                   <button
                     key={i}
                     onClick={() => onSearch(v)}
-                    className="text-xs bg-white px-2 py-1 rounded border hover:bg-orange-50 hover:border-orange-200 transition"
+                    className="text-xs bg-white px-2 py-1 rounded border hover:bg-hyrox-red/10 hover:border-hyrox-red/30 transition"
                   >
                     {v}
                   </button>
@@ -288,7 +288,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
           </div>
           
           <div className="flex items-start gap-3 text-sm">
-            <span className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+            <span className="w-6 h-6 bg-hyrox-red/20 text-hyrox-red-dark rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
             <div>
               <span className="font-medium">手动输入成绩</span>
               <p className="text-gray-500 text-xs mt-1">

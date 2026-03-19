@@ -1,29 +1,26 @@
 # HYROX Advance Design System
 
-**版本**: 1.0  
-**最后更新**: 2026-03-10  
-**基于**: Tailwind CSS + Framer Motion
+**版本**: 1.1  
+**最后更新**: 2026-03-19  
+**基于**: Tailwind CSS + Framer Motion  
+**参考**: [HYROX 官网](https://hyrox.com/elites/) 深色 + 红色强调风格
 
 ---
 
 ## 🎨 颜色系统
 
-### 主色调 (Brand Colors)
+### 主色调 (Brand Colors - HYROX 官网风格)
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `orange-500` | `#f97316` | 主按钮、强调色、品牌标识 |
-| `orange-600` | `#ea580c` | 按钮 hover 状态 |
-| `orange-50` | `#fff7ed` | 选中状态背景、浅色强调 |
-| `red-500` | `#ef4444` | 渐变搭配、错误状态 |
-| `gray-900` | `#111827` | 主标题、深色背景 |
-| `gray-800` | `#1f2937` | 次级标题 |
-| `gray-700` | `#374151` | 正文文本 |
-| `gray-600` | `#4b5563` | 次级文本 |
-| `gray-500` | `#6b7280` | 提示文本、图标 |
-| `gray-200` | `#e5e7eb` | 边框、分隔线 |
-| `gray-100` | `#f3f4f6` | 卡片背景、悬停状态 |
-| `gray-50` | `#f9fafb` | 页面背景 |
+| `hyrox-red` | `#E31837` | 主强调色、品牌红、按钮、链接 |
+| `hyrox-red-dark` | `#B8142C` | 按钮 hover、渐变深端 |
+| `hyrox-red-light` | `#FF2D4A` | 高亮文字、徽章 |
+| `hyrox-black` | `#0a0a0a` | 顶栏、页脚、深色块 |
+| `hyrox-gray-mid` | `#1f1f1f` | 卡片、底栏、次级背景 |
+| `gray-950` |  | 页面主背景 |
+| `gray-800` / `gray-700` |  | 卡片、输入框背景 |
+| `gray-400` / `gray-300` |  | 次级文本、图标 |
 
 ### 语义色 (Semantic Colors)
 
@@ -45,11 +42,11 @@
 ### 渐变色 (Gradients)
 
 ```css
-/* 主渐变 */
-.gradient-primary: bg-gradient-to-r from-orange-500 to-red-500
+/* 主渐变 - HYROX 红 */
+.gradient-primary: bg-gradient-to-r from-hyrox-red to-hyrox-red-dark
 .gradient-blue: bg-gradient-to-r from-blue-500 to-cyan-500
 .gradient-green: bg-gradient-to-r from-green-500 to-emerald-500
-.gradient-dark: bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900
+.gradient-dark: bg-gradient-to-br from-hyrox-black via-hyrox-gray-mid to-hyrox-black
 ```
 
 ### 对比度要求
@@ -58,11 +55,10 @@
 - **大文本** (>18px): 至少 3:1
 - **UI 组件边框**: 至少 3:1
 
-当前颜色组合对比度：
-- `gray-700` on `white`: 12.63:1 ✅
-- `gray-600` on `white`: 5.74:1 ✅
-- `orange-500` on `white`: 2.92:1 ⚠️ (仅用于装饰/大文本)
-- `white` on `orange-500`: 2.92:1 ⚠️ (需加粗或增大字号)
+当前主色对比度：
+- `hyrox-red` (#E31837) on `white`: 约 4.5:1 ✅
+- `white` on `hyrox-red`: 约 4.5:1 ✅
+- `gray-400` on `gray-950`: 满足可读性 ✅
 
 ---
 

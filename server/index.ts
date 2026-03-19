@@ -1,6 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import { rateLimit } from 'express-rate-limit';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -28,11 +29,29 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Rate limit for analysis APIs (AI cost + CPU)
+const analysisLimit = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_ANALYSIS_WINDOW_MS) || 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_ANALYSIS_MAX) || 20,
+  message: { success: false, error: 'Too many analysis requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limit for scraper APIs (external site load)
+const scrapeLimit = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_SCRAPE_WINDOW_MS) || 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_SCRAPE_MAX) || 10,
+  message: { success: false, error: 'Too many scrape requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? true // Allow all origins in production
-    : true, // 开发环境允许所有来源
+  origin: process.env.NODE_ENV === 'production'
+    ? true
+    : true,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -40,30 +59,32 @@ app.use(cookieParser());
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     service: 'HYROX Advance API',
     database: 'connected'
   });
 });
 
-// Mount routes
+// Mount routes (rate-limited first)
 app.use('/api/athletes', athletesRoutes);
 app.use('/api/results', resultsRoutes);
-app.use('/api/analysis', analysisRoutes);
-app.use('/api/analysis-db', analysisDbRoutes);  // Analysis with DB persistence
+app.use('/api/analysis', analysisLimit, analysisRoutes);
+app.use('/api/analysis-db', analysisLimit, analysisDbRoutes);
 app.use('/api/training', trainingRoutes);
-app.use('/api/scrape', scraperRoutes);
-app.use('/api/history', historyRoutes);  // Historical data queries
-app.use('/api/export', exportRoutes);  // Data export
+app.use('/api/scrape', scrapeLimit, scraperRoutes);
+app.use('/api/history', historyRoutes);
+app.use('/api/export', exportRoutes);
 
-// Error handling
+// Error handling: never leak error details to client in production
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Server error:', err);
+  const isDev = process.env.NODE_ENV !== 'production';
   res.status(500).json({
     success: false,
-    error: 'Internal server error'
+    error: 'Internal server error',
+    ...(isDev && err?.message && { message: err.message })
   });
 });
 

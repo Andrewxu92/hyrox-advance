@@ -205,7 +205,7 @@ function MyResults() {
       {/* 页面标题 */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-hyrox-red to-hyrox-red-dark flex items-center justify-center">
             <Trophy className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -229,8 +229,8 @@ function MyResults() {
           animate={{ opacity: 1, y: 0 }}
           className="sport-card p-8 text-center"
         >
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/10 flex items-center justify-center mx-auto mb-4">
-            <User className="w-12 h-12 text-orange-500" />
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-hyrox-red/20 to-hyrox-red/10 flex items-center justify-center mx-auto mb-4">
+            <User className="w-12 h-12 text-hyrox-red" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">还没有运动员档案</h2>
           <p className="text-gray-400 mb-6">创建一个运动员档案来开始记录你的 HYROX 成绩</p>
@@ -251,7 +251,7 @@ function MyResults() {
                 <h3 className="font-semibold text-white">选择运动员</h3>
                 <button
                   onClick={() => setShowAddAthlete(true)}
-                  className="text-orange-500 hover:text-orange-400 text-sm font-medium flex items-center gap-1"
+                  className="text-hyrox-red hover:text-hyrox-red-light text-sm font-medium flex items-center gap-1"
                 >
                   <Plus className="w-4 h-4" />
                   新建
@@ -265,7 +265,7 @@ function MyResults() {
                     onClick={() => selectAthlete(athlete)}
                     className={`w-full text-left p-3 rounded-xl transition ${
                       selectedAthlete?.id === athlete.id 
-                        ? 'bg-orange-500/10 border border-orange-500/30' 
+                        ? 'bg-hyrox-red/10 border border-hyrox-red/30' 
                         : 'bg-gray-800/50 hover:bg-gray-800'
                     }`}
                   >
@@ -293,7 +293,7 @@ function MyResults() {
             {selectedAthlete && (
               <>
                 {/* 资料卡片 */}
-                <div className="relative overflow-hidden rounded-2xl p-6 mb-6 bg-gradient-to-br from-orange-500 to-red-600">
+                <div className="relative overflow-hidden rounded-2xl p-6 mb-6 bg-gradient-to-br from-hyrox-red to-hyrox-red-dark">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                   
                   <div className="relative flex items-center gap-3 mb-4">
@@ -302,7 +302,7 @@ function MyResults() {
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-white">{selectedAthlete.name}</h2>
-                      <p className="text-orange-100 text-sm">
+                      <p className="text-white/80 text-sm">
                         {selectedAthlete.gender === 'male' ? '男' : '女'} 
                         {selectedAthlete.age ? ` · ${selectedAthlete.age}岁` : ''}
                         {selectedAthlete.experienceLevel && ` · ${selectedAthlete.experienceLevel}`}
@@ -312,9 +312,9 @@ function MyResults() {
                   
                   {selectedRace && (
                     <div className="relative bg-white/10 rounded-xl p-4">
-                      <div className="text-sm text-orange-100 mb-1">最近比赛成绩</div>
+                      <div className="text-sm text-white/80 mb-1">最近比赛成绩</div>
                       <div className="text-4xl font-bold text-white">{formatTime(selectedRace.totalTime)}</div>
-                      <div className="text-sm text-orange-100 mt-1">
+                      <div className="text-sm text-white/80 mt-1">
                         {selectedRace.raceName} · {selectedRace.raceDate}
                         {selectedRace.raceLocation && ` · ${selectedRace.raceLocation}`}
                       </div>
@@ -331,7 +331,7 @@ function MyResults() {
                   
                   {loading ? (
                     <div className="p-8 text-center text-gray-500">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-3"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hyrox-red mx-auto mb-3"></div>
                       加载中...
                     </div>
                   ) : results.length === 0 ? (
@@ -348,7 +348,7 @@ function MyResults() {
                           onClick={() => setSelectedRace(race)}
                           className={`w-full text-left p-3 rounded-xl transition ${
                             selectedRace?.id === race.id 
-                              ? 'bg-orange-500/10 border border-orange-500/30' 
+                              ? 'bg-hyrox-red/10 border border-hyrox-red/30' 
                               : 'bg-gray-800/50 hover:bg-gray-800'
                           }`}
                         >
@@ -360,7 +360,7 @@ function MyResults() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-xl font-bold text-orange-400">{formatTime(race.totalTime)}</div>
+                              <div className="text-xl font-bold text-hyrox-red-light">{formatTime(race.totalTime)}</div>
                               {race.overallRank && (
                                 <div className="text-xs text-gray-500">总排名：{race.overallRank}</div>
                               )}
@@ -382,7 +382,7 @@ function MyResults() {
                         return (
                           <div className="sport-card p-5">
                             <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                              <Activity className="w-5 h-5 text-orange-500" />
+                              <Activity className="w-5 h-5 text-hyrox-red" />
                               输入跑步分段数据
                             </h3>
                             <p className="text-sm text-gray-400 mb-4">
@@ -420,7 +420,7 @@ function MyResults() {
                           {/* 关键发现 */}
                           <div className="sport-card p-5">
                             <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                              <Activity className="w-5 h-5 text-orange-500" />
+                              <Activity className="w-5 h-5 text-hyrox-red" />
                               关键发现
                             </h3>
                             
@@ -472,14 +472,14 @@ function MyResults() {
                           {/* 提升计划 */}
                           <div className="sport-card p-5">
                             <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                              <Target className="w-5 h-5 text-orange-500" />
+                              <Target className="w-5 h-5 text-hyrox-red" />
                               下一步练什么？
                             </h3>
                             
                             <div className="space-y-3">
-                              <div className="sport-card p-4 bg-gradient-to-r from-orange-500/10 to-red-500/5 border-orange-500/20">
+                              <div className="sport-card p-4 bg-gradient-to-r from-hyrox-red/10 to-hyrox-red/5 border-hyrox-red/20">
                                 <div className="flex items-start gap-3">
-                                  <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                  <div className="w-6 h-6 bg-hyrox-red text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                                     1
                                   </div>
                                   <div>

@@ -226,7 +226,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
                   onClick={() => setAthleteInfo({ ...athleteInfo, gender: 'male' })}
                   className={`py-4 px-4 rounded-xl border-2 transition font-medium ${
                     athleteInfo.gender === 'male'
-                      ? 'border-orange-500 bg-orange-500/10 text-orange-400'
+                      ? 'border-hyrox-red bg-hyrox-red/10 text-hyrox-red-light'
                       : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
                   }`}
                 >
@@ -236,7 +236,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
                   onClick={() => setAthleteInfo({ ...athleteInfo, gender: 'female' })}
                   className={`py-4 px-4 rounded-xl border-2 transition font-medium ${
                     athleteInfo.gender === 'female'
-                      ? 'border-orange-500 bg-orange-500/10 text-orange-400'
+                      ? 'border-hyrox-red bg-hyrox-red/10 text-hyrox-red-light'
                       : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
                   }`}
                 >
@@ -353,8 +353,8 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
 
         return (
           <div className="space-y-4">
-            <div className="sport-card p-4 bg-gradient-to-br from-orange-500/10 to-red-500/5 border-orange-500/20">
-              <h4 className="font-semibold text-orange-400 mb-3 flex items-center gap-2">
+            <div className="sport-card p-4 bg-gradient-to-br from-hyrox-red/10 to-hyrox-red/5 border-hyrox-red/20">
+              <h4 className="font-semibold text-hyrox-red-light mb-3 flex items-center gap-2">
                 <Dumbbell className="w-4 h-4" />
                 成绩概览
               </h4>
@@ -365,7 +365,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">总用时</span>
-                  <span className="font-bold text-orange-400">{formatSecondsToTime(totalTime)}</span>
+                  <span className="font-bold text-hyrox-red-light">{formatSecondsToTime(totalTime)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">跑步总用时</span>
@@ -459,7 +459,7 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
             {apiError.retryable && (
               <button
                 onClick={clearError}
-                className="flex items-center justify-center gap-2 text-sm text-orange-400 hover:text-orange-300 py-2"
+                className="flex items-center justify-center gap-2 text-sm text-hyrox-red-light hover:text-hyrox-red-light py-2"
               >
                 <RefreshCw className="w-4 h-4" />
                 重试

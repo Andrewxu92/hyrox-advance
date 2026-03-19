@@ -214,7 +214,7 @@ export function DataImportExport({ data, onImport, className = '' }: DataImportE
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition"
+        className="flex items-center gap-2 text-sm text-gray-600 hover:text-hyrox-red-dark transition"
       >
         <Upload className="w-4 h-4" />
         导入/导出数据
@@ -253,7 +253,7 @@ export function DataImportExport({ data, onImport, className = '' }: DataImportE
                   onClick={() => setActiveTab('export')}
                   className={`flex-1 py-3 px-4 text-sm font-medium transition ${
                     activeTab === 'export'
-                      ? 'text-orange-600 border-b-2 border-orange-500'
+                      ? 'text-hyrox-red-dark border-b-2 border-hyrox-red'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
@@ -263,7 +263,7 @@ export function DataImportExport({ data, onImport, className = '' }: DataImportE
                   onClick={() => setActiveTab('import')}
                   className={`flex-1 py-3 px-4 text-sm font-medium transition ${
                     activeTab === 'import'
-                      ? 'text-orange-600 border-b-2 border-orange-500'
+                      ? 'text-hyrox-red-dark border-b-2 border-hyrox-red'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
@@ -307,7 +307,7 @@ export function DataImportExport({ data, onImport, className = '' }: DataImportE
 
                     <button
                       onClick={handleCopyToClipboard}
-                      className="w-full flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:text-orange-600 transition"
+                      className="w-full flex items-center justify-center gap-2 p-3 border-2 border-gray-200 rounded-lg hover:border-hyrox-red hover:text-hyrox-red-dark transition"
                     >
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       {copied ? '已复制' : '复制 JSON 到剪贴板'}
@@ -315,7 +315,7 @@ export function DataImportExport({ data, onImport, className = '' }: DataImportE
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-500 transition">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-hyrox-red transition">
                       <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
                       <p className="text-sm text-gray-600 mb-2">拖拽文件到此处或点击上传</p>
                       <input
@@ -327,7 +327,7 @@ export function DataImportExport({ data, onImport, className = '' }: DataImportE
                       />
                       <label
                         htmlFor="file-upload"
-                        className="inline-block px-4 py-2 bg-orange-500 text-white rounded-lg cursor-pointer hover:bg-orange-600 transition"
+                        className="inline-block px-4 py-2 bg-hyrox-red text-white rounded-lg cursor-pointer hover:bg-hyrox-red-dark transition"
                       >
                         选择文件
                       </label>
@@ -342,7 +342,7 @@ export function DataImportExport({ data, onImport, className = '' }: DataImportE
                         setValidationResult(null);
                       }}
                       placeholder="粘贴 JSON 或 CSV 数据..."
-                      className="w-full h-40 p-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none resize-none text-sm font-mono"
+                      className="w-full h-40 p-3 border-2 border-gray-200 rounded-lg focus:border-hyrox-red focus:outline-none resize-none text-sm font-mono"
                     />
 
                     {validationResult && !validationResult.valid && (
@@ -362,7 +362,7 @@ export function DataImportExport({ data, onImport, className = '' }: DataImportE
                     <button
                       onClick={handleImport}
                       disabled={!importText.trim()}
-                      className="w-full flex items-center justify-center gap-2 p-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full flex items-center justify-center gap-2 p-3 bg-hyrox-red text-white rounded-lg hover:bg-hyrox-red-dark transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Download className="w-4 h-4" />
                       导入数据

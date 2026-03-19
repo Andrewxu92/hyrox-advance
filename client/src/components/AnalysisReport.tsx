@@ -90,7 +90,7 @@ function CollapsibleSection({
           whileTap={{ scale: 0.995 }}
         >
           <div className="flex items-center gap-3">
-            {icon && <div className="text-orange-500">{icon}</div>}
+            {icon && <div className="text-hyrox-red">{icon}</div>}
             <div className="text-left">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-white">{title}</span>
@@ -159,7 +159,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
   const getMuscleGroupColor = (score: number) => {
     if (score >= 80) return 'text-green-400';
     if (score >= 60) return 'text-yellow-400';
-    if (score >= 40) return 'text-orange-400';
+    if (score >= 40) return 'text-hyrox-red-light';
     return 'text-red-400';
   };
 
@@ -198,7 +198,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="relative overflow-hidden rounded-2xl p-6 mb-6 bg-gradient-to-br from-orange-500 to-red-600"
+          className="relative overflow-hidden rounded-2xl p-6 mb-6 bg-gradient-to-br from-hyrox-red to-hyrox-red-dark"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
           
@@ -211,7 +211,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
             >
               {analysis.formattedTotalTime}
             </motion.div>
-            <div className="text-orange-100">总成绩</div>
+            <div className="text-white/80">总成绩</div>
           </div>
           
           <div className="relative grid grid-cols-3 gap-3 sm:gap-4 text-center">
@@ -222,7 +222,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
               className="bg-white/20 rounded-xl p-3 backdrop-blur-sm"
             >
               <div className="stat-number text-xl sm:text-2xl">{analysis.overallScore}</div>
-              <div className="text-xs text-orange-100">综合分</div>
+              <div className="text-xs text-white/80">综合分</div>
             </motion.div>
             
             <motion.div
@@ -232,7 +232,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
               className="bg-white/20 rounded-xl p-3 backdrop-blur-sm"
             >
               <span className={`sport-badge ${levelInfo.className}`}>{levelInfo.text}</span>
-              <div className="text-xs text-orange-100 mt-1">水平</div>
+              <div className="text-xs text-white/80 mt-1">水平</div>
             </motion.div>
             
             <motion.div
@@ -242,7 +242,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
               className="bg-white/20 rounded-xl p-3 backdrop-blur-sm"
             >
               <div className="stat-number text-xl sm:text-2xl text-green-300">{analysis.predictedImprovement}</div>
-              <div className="text-xs text-orange-100">预计提升</div>
+              <div className="text-xs text-white/80">预计提升</div>
             </motion.div>
           </div>
         </motion.div>
@@ -378,12 +378,12 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
         {analysis.energySystemAnalysis && (
           <div className="mb-6">
             <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-              <Flame className="w-4 h-4 text-orange-400" />
+              <Flame className="w-4 h-4 text-hyrox-red-light" />
               能量系统分析
             </h4>
             <div className="sport-card p-4">
               <div className="text-sm text-gray-400 mb-3">
-                主导系统：<span className="font-semibold text-orange-400">{getDominantSystemName(analysis.energySystemAnalysis.dominantSystem)}</span>
+                主导系统：<span className="font-semibold text-hyrox-red-light">{getDominantSystemName(analysis.energySystemAnalysis.dominantSystem)}</span>
               </div>
               
               <div className="space-y-3">
@@ -475,7 +475,7 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
         defaultExpanded={false}
         delay={0.3}
         badge={
-          <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-hyrox-red/20 text-hyrox-red-light">
             {analysis.recommendations.length} 项建议
           </span>
         }
@@ -487,10 +487,10 @@ function AnalysisReport({ analysis, onBack }: AnalysisReportProps) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * idx }}
-              className="sport-card p-4 bg-gradient-to-r from-orange-500/10 to-transparent border-orange-500/20"
+              className="sport-card p-4 bg-gradient-to-r from-hyrox-red/10 to-transparent border-hyrox-red/20"
             >
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                <div className="w-7 h-7 bg-hyrox-red text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                   {idx + 1}
                 </div>
                 <div className="flex-1">
