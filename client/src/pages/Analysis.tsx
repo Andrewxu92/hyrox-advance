@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResultInput from '../components/ResultInput';
 import StepWizardInput from '../components/StepWizardInput';
@@ -52,11 +53,25 @@ interface AnalysisData {
 /** 三种输入方式并列，不再用「快捷/详细」两层 */
 type InputMode = 'total' | 'scrape' | 'detailed';
 
+function parseInputModeParam(value: string | null): InputMode | null {
+  if (value === 'total' || value === 'scrape' || value === 'detailed') return value;
+  return null;
+}
+
 function Analysis() {
+  const [searchParams] = useSearchParams();
+
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [showTraining, setShowTraining] = useState(false);
   const [activeTab, setActiveTab] = useState<'report' | 'chart'>('report');
-  const [inputMode, setInputMode] = useState<InputMode>('total');
+  const [inputMode, setInputMode] = useState<InputMode>(
+    () => parseInputModeParam(searchParams.get('mode')) ?? 'total'
+  );
+
+  useEffect(() => {
+    const m = parseInputModeParam(searchParams.get('mode'));
+    if (m != null) setInputMode(m);
+  }, [searchParams]);
   const { toasts, removeToast, success } = useToast();
 
   const handleAnalysis = (data: AnalysisData) => {

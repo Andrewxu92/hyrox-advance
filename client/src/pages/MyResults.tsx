@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   User, Calendar, Trophy, TrendingUp, TrendingDown, 
   AlertCircle, Activity, Target, Plus, X, Timer, Flame, GitCompare
@@ -394,7 +395,23 @@ function MyResults() {
                     <div className="p-8 text-center text-gray-500">
                       <Trophy className="w-12 h-12 mx-auto mb-3 text-gray-600" />
                       <p>还没有比赛记录</p>
-                      <p className="text-sm mt-2">使用「成绩分析」页面添加第一场比赛</p>
+                      <p className="text-sm mt-2 mb-5">
+                        在「成绩分析」中从官网导入或手动录入后，可将成绩保存到本地档案
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                        <Link
+                          to="/analysis?mode=scrape"
+                          className="btn-primary px-5 py-2.5 rounded-xl text-sm font-medium inline-flex items-center justify-center gap-2"
+                        >
+                          从官网导入成绩
+                        </Link>
+                        <Link
+                          to="/analysis?mode=detailed"
+                          className="text-hyrox-red hover:text-hyrox-red-light text-sm font-medium"
+                        >
+                          手动录入分段 →
+                        </Link>
+                      </div>
                     </div>
                   ) : selectingForCompare ? (
                     <>

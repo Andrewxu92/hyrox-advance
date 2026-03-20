@@ -125,7 +125,7 @@ function Home() {
               </button>
               
               <button
-                onClick={() => navigate('/analysis')}
+                onClick={() => navigate('/analysis?mode=total')}
                 className="btn-secondary px-8 py-4 rounded-xl text-lg font-medium flex items-center justify-center gap-2"
               >
                 <Zap className="w-5 h-5 text-hyrox-red" />
@@ -176,7 +176,11 @@ function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
                 className="sport-card p-6 hover:scale-[1.02] transition-transform cursor-pointer"
-                onClick={() => navigate(idx === 0 ? '/my-results' : '/analysis')}
+                onClick={() => {
+                  if (idx === 0) navigate('/analysis?mode=scrape');
+                  else if (idx === 1) navigate('/analysis?mode=total');
+                  else navigate('/analysis?mode=detailed');
+                }}
               >
                 {/* 步骤编号 */}
                 <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${step.color} mb-4`}>
@@ -268,11 +272,11 @@ function Home() {
               </p>
               
               <button
-                onClick={() => navigate('/my-results')}
+                onClick={() => navigate('/analysis?mode=scrape')}
                 className="btn-primary px-10 py-4 rounded-xl text-lg font-bold inline-flex items-center gap-2"
               >
                 <Trophy className="w-5 h-5" />
-                立即查看我的成绩
+                从官网获取成绩
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>

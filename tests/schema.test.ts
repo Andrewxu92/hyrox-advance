@@ -47,6 +47,7 @@ describe('Results Table Columns', () => {
     
     expect(columns.skiErg).toBeDefined();
     expect(columns.sledPush).toBeDefined();
+    expect(columns.sledPull).toBeDefined();
     expect(columns.burpeeBroadJump).toBeDefined();
     expect(columns.rowing).toBeDefined();
     expect(columns.farmersCarry).toBeDefined();

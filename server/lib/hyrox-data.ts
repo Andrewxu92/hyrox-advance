@@ -38,6 +38,41 @@ export const STATION_DISPLAY_NAMES: Record<string, string> = {
 // Run names
 export const RUN_NAMES = ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'] as const;
 
+/** Official HYROX order: 8 runs + 8 stations (single source of truth for validation & totals). */
+export const HYROX_SPLIT_KEYS_IN_ORDER = [
+  'run1',
+  'skiErg',
+  'run2',
+  'sledPush',
+  'run3',
+  'sledPull',
+  'run4',
+  'burpeeBroadJump',
+  'run5',
+  'rowing',
+  'run6',
+  'farmersCarry',
+  'run7',
+  'sandbagLunges',
+  'run8',
+  'wallBalls',
+] as const;
+
+export type HyroxSplitKey = (typeof HYROX_SPLIT_KEYS_IN_ORDER)[number];
+
+/** All segment times in seconds (matches DB `results` columns & shared/schema splits). */
+export type HyroxSplits = Record<HyroxSplitKey, number>;
+
+/** Keys missing from `splits` (empty object / null → all keys). */
+export function getMissingSplitKeys(splits: unknown): HyroxSplitKey[] {
+  if (!splits || typeof splits !== 'object') {
+    return [...HYROX_SPLIT_KEYS_IN_ORDER];
+  }
+  return HYROX_SPLIT_KEYS_IN_ORDER.filter(
+    (key) => !(key in splits) || (splits as Record<string, unknown>)[key] == null
+  );
+}
+
 // Benchmark data for men (times in seconds) - 修正为8个站
 export const MALE_BENCHMARKS: Record<string, LevelBenchmarks> = {
   elite: {
@@ -182,11 +217,11 @@ export function parseTime(timeStr: string): number {
   return parseInt(timeStr) || 0;
 }
 
-// Calculate total time from splits
+// Calculate total time from splits (only official HYROX keys; ignores unknown fields)
 export function calculateTotalTime(splits: Record<string, number>): number {
   let total = 0;
-  for (const key in splits) {
-    total += splits[key] || 0;
+  for (const key of HYROX_SPLIT_KEYS_IN_ORDER) {
+    total += splits[key] ?? 0;
   }
   return total;
 }

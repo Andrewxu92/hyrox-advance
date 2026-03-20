@@ -13,11 +13,38 @@ import {
 import { getDatabase } from '../db/index.js';
 import { analysisReports, results, athletes, type NewAnalysisReport } from '../db/schema.js';
 import { eq, desc, and } from 'drizzle-orm';
+import { generateId } from '../lib/id.js';
 
 const router = Router();
 
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+function parseJsonField(raw: string | null): unknown {
+  if (raw == null || raw === '') return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    console.warn('Invalid JSON in analysis report column');
+    return null;
+  }
+}
+
+function parseReportJsonFields(analysis: {
+  weaknesses: string | null;
+  strengths: string | null;
+  pacingAnalysis: string | null;
+  fitnessProfile: string | null;
+  recommendations: string | null;
+  energySystemAnalysis: string | null;
+  muscleFatigueAnalysis: string | null;
+}) {
+  return {
+    weaknesses: parseJsonField(analysis.weaknesses),
+    strengths: parseJsonField(analysis.strengths),
+    pacingAnalysis: parseJsonField(analysis.pacingAnalysis),
+    fitnessProfile: parseJsonField(analysis.fitnessProfile),
+    recommendations: parseJsonField(analysis.recommendations),
+    energySystemAnalysis: parseJsonField(analysis.energySystemAnalysis),
+    muscleFatigueAnalysis: parseJsonField(analysis.muscleFatigueAnalysis),
+  };
 }
 
 // POST /api/analysis-db - Generate AI analysis and save to database
@@ -76,6 +103,15 @@ router.post('/', async (req, res) => {
         console.log(`✅ Analysis saved to database: ${savedAnalysisId}`);
       } catch (dbError) {
         console.error('⚠️ Failed to save analysis to database:', dbError);
+        const isDev = process.env.NODE_ENV !== 'production';
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to save analysis to database',
+          data: combinedAnalysis,
+          ...(isDev && {
+            message: dbError instanceof Error ? dbError.message : String(dbError),
+          }),
+        });
       }
     }
 
@@ -158,18 +194,11 @@ router.get('/reports', async (req, res) => {
     .orderBy(desc(analysisReports.createdAt))
     .limit(Number(limit));
 
-    // Parse JSON fields
-    const parsedReports = reports.map(r => ({
+    const parsedReports = reports.map((r) => ({
       ...r.analysis,
+      ...parseReportJsonFields(r.analysis),
       athlete: r.athlete,
       result: r.result,
-      weaknesses: r.analysis.weaknesses ? JSON.parse(r.analysis.weaknesses) : null,
-      strengths: r.analysis.strengths ? JSON.parse(r.analysis.strengths) : null,
-      pacingAnalysis: r.analysis.pacingAnalysis ? JSON.parse(r.analysis.pacingAnalysis) : null,
-      fitnessProfile: r.analysis.fitnessProfile ? JSON.parse(r.analysis.fitnessProfile) : null,
-      recommendations: r.analysis.recommendations ? JSON.parse(r.analysis.recommendations) : null,
-      energySystemAnalysis: r.analysis.energySystemAnalysis ? JSON.parse(r.analysis.energySystemAnalysis) : null,
-      muscleFatigueAnalysis: r.analysis.muscleFatigueAnalysis ? JSON.parse(r.analysis.muscleFatigueAnalysis) : null,
     }));
 
     res.json({
@@ -213,15 +242,9 @@ router.get('/reports/:id', async (req, res) => {
     const r = reportList[0];
     const parsedReport = {
       ...r.analysis,
+      ...parseReportJsonFields(r.analysis),
       athlete: r.athlete,
       result: r.result,
-      weaknesses: r.analysis.weaknesses ? JSON.parse(r.analysis.weaknesses) : null,
-      strengths: r.analysis.strengths ? JSON.parse(r.analysis.strengths) : null,
-      pacingAnalysis: r.analysis.pacingAnalysis ? JSON.parse(r.analysis.pacingAnalysis) : null,
-      fitnessProfile: r.analysis.fitnessProfile ? JSON.parse(r.analysis.fitnessProfile) : null,
-      recommendations: r.analysis.recommendations ? JSON.parse(r.analysis.recommendations) : null,
-      energySystemAnalysis: r.analysis.energySystemAnalysis ? JSON.parse(r.analysis.energySystemAnalysis) : null,
-      muscleFatigueAnalysis: r.analysis.muscleFatigueAnalysis ? JSON.parse(r.analysis.muscleFatigueAnalysis) : null,
     };
 
     res.json({

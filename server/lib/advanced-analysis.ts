@@ -2,6 +2,7 @@
 // 融合运动科学：能量系统分析 + 肌肉群疲劳分析
 
 import type { AnalysisReport } from '../../shared/schema.js';
+import type { HyroxSplits } from './hyrox-data.js';
 
 // ============================================
 // 能量系统分析
@@ -15,12 +16,7 @@ import type { AnalysisReport } from '../../shared/schema.js';
  * - 糖酵解系统：30s-2min 高强度 (每个 Station 的主要供能系统)
  * - 有氧氧化系统：持续耐力 (8 轮跑步的主要供能系统)
  */
-export function analyzeEnergySystem(splits: {
-  run1: number; skiErg: number; run2: number; sledPush: number;
-  run3: number; sledPull: number; run4: number; burpeeBroadJump: number;  // 新增 sledPull
-  run5: number; rowing: number; run6: number; farmersCarry: number;       // 修正 run 顺序
-  run7: number; sandbagLunges: number; run8: number; wallBalls: number;   // 修正 wallBalls 位置
-}): {
+export function analyzeEnergySystem(splits: HyroxSplits): {
   atpCpContribution: number;
   glycolyticContribution: number;
   aerobicContribution: number;
@@ -132,12 +128,7 @@ function getDominantSystemName(system: string): string {
  * - SkiErg → 上肢拉力 + 核心
  * - Burpee Broad Jump → 全身爆发力
  */
-export function analyzeMuscleFatigue(splits: {
-  skiErg: number; sledPush: number; burpeeBroadJump: number; rowing: number;
-  farmersCarry: number; sandbagLunges: number; wallBalls: number;
-  run1: number; run2: number; run3: number; run4: number;
-  run5: number; run6: number; run7: number; run8: number;
-}): {
+export function analyzeMuscleFatigue(splits: HyroxSplits): {
   upperBodyPush: number;
   upperBodyPull: number;
   lowerBodyQuad: number;
@@ -248,7 +239,7 @@ function getScoreEmoji(score: number): string {
 /**
  * 生成完整的进阶分析报告
  */
-export function generateAdvancedAnalysis(splits: any): Partial<AnalysisReport> {
+export function generateAdvancedAnalysis(splits: HyroxSplits): Partial<AnalysisReport> {
   const energyAnalysis = analyzeEnergySystem(splits);
   const muscleAnalysis = analyzeMuscleFatigue(splits);
   

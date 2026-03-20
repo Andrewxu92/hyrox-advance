@@ -6,13 +6,9 @@ import { eq, desc, asc, and, gte, lte } from 'drizzle-orm';
 import { getDatabase } from '../db/index.js';
 import { athletes, results, analysisReports, type NewAthlete, type NewResult } from '../db/schema.js';
 import { formatTime, calculateTotalTime } from '../lib/hyrox-data.js';
+import { generateId } from '../lib/id.js';
 
 const router = Router();
-
-// 生成唯一 ID
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
 
 // ============================================
 // GET /api/athletes - 获取所有运动员

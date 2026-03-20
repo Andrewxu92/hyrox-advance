@@ -1,34 +1,29 @@
 // Shared analysis logic for /api/analysis and /api/analysis-db
 // Validation, full AI analysis, quick analysis, benchmarks
 
-import { generateAnalysis, type AthleteInfo, type HyroxSplits } from './openai.js';
+import { generateAnalysis, type AthleteInfo } from './openai.js';
 import {
   calculateTotalTime,
   formatTime,
   determineLevel,
   getBenchmarks,
   STATION_DISPLAY_NAMES,
-  type LevelBenchmarks
+  type LevelBenchmarks,
+  type HyroxSplits,
+  getMissingSplitKeys,
 } from './hyrox-data.js';
 import { generateAdvancedAnalysis } from './advanced-analysis.js';
 
-const REQUIRED_SPLITS = [
-  'run1',
-  'skiErg',
-  'run2',
-  'sledPush',
-  'run3',
-  'burpeeBroadJump',
-  'run4',
-  'rowing',
-  'run5',
-  'farmersCarry',
-  'run6',
-  'sandbagLunges',
-  'run7',
-  'wallBalls',
-  'run8',
-] as const;
+function validateSplitsShape(splits: unknown): HyroxSplits {
+  if (!splits || typeof splits !== 'object') {
+    throw new ValidationError('Missing required data: splits and athleteInfo are required');
+  }
+  const missingSplits = getMissingSplitKeys(splits);
+  if (missingSplits.length > 0) {
+    throw new ValidationError(`Missing splits: ${missingSplits.join(', ')}`);
+  }
+  return splits as HyroxSplits;
+}
 
 export class ValidationError extends Error {
   constructor(
@@ -54,15 +49,7 @@ export function validateAnalysisRequest(body: unknown): ValidatedAnalysisRequest
   }
   const { splits, athleteInfo } = body as Record<string, unknown>;
 
-  if (!splits || typeof splits !== 'object') {
-    throw new ValidationError('Missing required data: splits and athleteInfo are required');
-  }
-  const missingSplits = REQUIRED_SPLITS.filter(
-    (key) => !(key in splits) || (splits as Record<string, unknown>)[key] == null
-  );
-  if (missingSplits.length > 0) {
-    throw new ValidationError(`Missing splits: ${missingSplits.join(', ')}`);
-  }
+  const s = validateSplitsShape(splits);
 
   if (!athleteInfo || typeof athleteInfo !== 'object') {
     throw new ValidationError('Missing required data: splits and athleteInfo are required');
@@ -72,7 +59,7 @@ export function validateAnalysisRequest(body: unknown): ValidatedAnalysisRequest
     throw new ValidationError('athleteInfo.gender must be "male" or "female"');
   }
 
-  return { splits: splits as HyroxSplits, athleteInfo: athleteInfo as AthleteInfo };
+  return { splits: s, athleteInfo: athleteInfo as AthleteInfo };
 }
 
 /**
@@ -83,10 +70,15 @@ export function validateQuickAnalysisRequest(body: unknown): { splits: HyroxSpli
     throw new ValidationError('Missing required data');
   }
   const { splits, athleteInfo } = body as Record<string, unknown>;
-  if (!splits || !(athleteInfo as Record<string, unknown>)?.gender) {
+  const s = validateSplitsShape(splits);
+  if (!athleteInfo || typeof athleteInfo !== 'object') {
     throw new ValidationError('Missing required data');
   }
-  return { splits: splits as HyroxSplits, athleteInfo: athleteInfo as AthleteInfo };
+  const ai = athleteInfo as Record<string, unknown>;
+  if (!ai.gender || !['male', 'female'].includes(ai.gender as string)) {
+    throw new ValidationError('athleteInfo.gender must be "male" or "female"');
+  }
+  return { splits: s, athleteInfo: athleteInfo as AthleteInfo };
 }
 
 /**
@@ -105,7 +97,7 @@ export async function runFullAnalysis(
  * Run quick analysis (no AI). Returns level, stations, run analysis, advanced analysis.
  */
 export function runQuickAnalysis(splits: HyroxSplits, athleteInfo: AthleteInfo): Record<string, unknown> {
-  const totalTime = calculateTotalTime(splits as unknown as Record<string, number>);
+  const totalTime = calculateTotalTime(splits);
   const level = determineLevel(totalTime, athleteInfo.gender);
   const benchmarks = getBenchmarks(athleteInfo.gender);
 

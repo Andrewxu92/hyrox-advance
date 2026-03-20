@@ -1,5 +1,14 @@
 import OpenAI from 'openai';
-import { formatTime, getBenchmarks, STATION_DISPLAY_NAMES, determineLevel, calculateTotalTime } from './hyrox-data.js';
+import {
+  formatTime,
+  getBenchmarks,
+  STATION_DISPLAY_NAMES,
+  determineLevel,
+  calculateTotalTime,
+  type HyroxSplits,
+} from './hyrox-data.js';
+
+export type { HyroxSplits };
 
 // Support both OpenAI and DashScope (Aliyun) APIs
 // DashScope uses OpenAI-compatible API format
@@ -17,24 +26,6 @@ export interface AthleteInfo {
   age?: number;
   weight?: number;
   experience?: 'none' | 'beginner' | 'intermediate' | 'advanced';
-}
-
-export interface HyroxSplits {
-  run1: number;
-  skiErg: number;
-  run2: number;
-  sledPush: number;
-  run3: number;
-  burpeeBroadJump: number;
-  run4: number;
-  rowing: number;
-  run5: number;
-  farmersCarry: number;
-  run6: number;
-  sandbagLunges: number;
-  run7: number;
-  wallBalls: number;
-  run8: number;
 }
 
 export interface AnalysisResult {
@@ -87,7 +78,7 @@ export async function generateAnalysis(
     return generateMockAnalysis(splits, athleteInfo);
   }
 
-  const totalTime = calculateTotalTime(splits as unknown as Record<string, number>);
+  const totalTime = calculateTotalTime(splits);
   const level = determineLevel(totalTime, athleteInfo.gender);
   const benchmarks = getBenchmarks(athleteInfo.gender);
   
@@ -234,16 +225,17 @@ Splits:
 - Run 2: ${formatTime(splits.run2)}
 - Station 2 (Sled Push): ${formatTime(splits.sledPush)}
 - Run 3: ${formatTime(splits.run3)}
-- Station 3 (Burpee Broad Jump): ${formatTime(splits.burpeeBroadJump)}
+- Station 3 (Sled Pull): ${formatTime(splits.sledPull)}
 - Run 4: ${formatTime(splits.run4)}
-- Station 4 (Rowing): ${formatTime(splits.rowing)}
+- Station 4 (Burpee Broad Jump): ${formatTime(splits.burpeeBroadJump)}
 - Run 5: ${formatTime(splits.run5)}
-- Station 5 (Farmer's Carry): ${formatTime(splits.farmersCarry)}
+- Station 5 (Rowing): ${formatTime(splits.rowing)}
 - Run 6: ${formatTime(splits.run6)}
-- Station 6 (Sandbag Lunges): ${formatTime(splits.sandbagLunges)}
+- Station 6 (Farmer's Carry): ${formatTime(splits.farmersCarry)}
 - Run 7: ${formatTime(splits.run7)}
-- Station 7 (Wall Balls): ${formatTime(splits.wallBalls)}
+- Station 7 (Sandbag Lunges): ${formatTime(splits.sandbagLunges)}
 - Run 8: ${formatTime(splits.run8)}
+- Station 8 (Wall Balls): ${formatTime(splits.wallBalls)}
 
 Weaknesses Identified:
 ${weaknesses.map((w, i) => `${i + 1}. ${w.displayName}: ${w.formattedTime} (+${formatTime(w.gap)} vs benchmark)`).join('\n')}
@@ -353,7 +345,7 @@ function generateDefaultRecommendations(weaknesses: any[]): any[] {
 }
 
 function generateMockAnalysis(splits: HyroxSplits, athleteInfo: AthleteInfo): AnalysisResult {
-  const totalTime = calculateTotalTime(splits as unknown as Record<string, number>);
+  const totalTime = calculateTotalTime(splits);
   const level = determineLevel(totalTime, athleteInfo.gender);
   
   return {

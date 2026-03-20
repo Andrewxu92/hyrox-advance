@@ -5,14 +5,17 @@ import { Router } from 'express';
 import { eq, desc, asc, and, gte, lte, sql } from 'drizzle-orm';
 import { getDatabase } from '../db/index.js';
 import { results, athletes, analysisReports, type NewResult } from '../db/schema.js';
-import { formatTime, calculateTotalTime, STATION_NAMES, RUN_NAMES } from '../lib/hyrox-data.js';
+import {
+  formatTime,
+  calculateTotalTime,
+  STATION_NAMES,
+  RUN_NAMES,
+  getMissingSplitKeys,
+  type HyroxSplits,
+} from '../lib/hyrox-data.js';
+import { generateId } from '../lib/id.js';
 
 const router = Router();
-
-// 生成唯一 ID
-function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
 
 // ============================================
 // GET /api/results - 获取所有成绩（可筛选）
@@ -126,6 +129,14 @@ router.post('/', async (req, res) => {
         error: 'athleteId, raceName, raceDate, and splits are required',
       });
     }
+
+    const missingSplits = getMissingSplitKeys(splits);
+    if (missingSplits.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: `Missing splits: ${missingSplits.join(', ')}`,
+      });
+    }
     
     // 验证运动员是否存在
     const athleteList = await db.select().from(athletes).where(eq(athletes.id, athleteId));
@@ -136,8 +147,8 @@ router.post('/', async (req, res) => {
       });
     }
     
-    // 计算总成绩
-    const totalTime = calculateTotalTime(splits);
+    // 计算总成绩（与 analysis API 相同的 16 段）
+    const totalTime = calculateTotalTime(splits as HyroxSplits);
     
     // 创建成绩记录
     const newResult: NewResult = {
@@ -152,22 +163,23 @@ router.post('/', async (req, res) => {
       ageGroupRank: ageGroupRank || null,
       genderRank: genderRank || null,
       
-      // 分段成绩
-      run1: splits.run1 || null,
-      skiErg: splits.skiErg || null,
-      run2: splits.run2 || null,
-      sledPush: splits.sledPush || null,
-      run3: splits.run3 || null,
-      burpeeBroadJump: splits.burpeeBroadJump || null,
-      run4: splits.run4 || null,
-      rowing: splits.rowing || null,
-      run5: splits.run5 || null,
-      farmersCarry: splits.farmersCarry || null,
-      run6: splits.run6 || null,
-      sandbagLunges: splits.sandbagLunges || null,
-      run7: splits.run7 || null,
-      wallBalls: splits.wallBalls || null,
-      run8: splits.run8 || null,
+      // 分段成绩（顺序与 HYROX_SPLIT_KEYS_IN_ORDER / DB schema 一致）
+      run1: splits.run1 ?? null,
+      skiErg: splits.skiErg ?? null,
+      run2: splits.run2 ?? null,
+      sledPush: splits.sledPush ?? null,
+      run3: splits.run3 ?? null,
+      sledPull: splits.sledPull ?? null,
+      run4: splits.run4 ?? null,
+      burpeeBroadJump: splits.burpeeBroadJump ?? null,
+      run5: splits.run5 ?? null,
+      rowing: splits.rowing ?? null,
+      run6: splits.run6 ?? null,
+      farmersCarry: splits.farmersCarry ?? null,
+      run7: splits.run7 ?? null,
+      sandbagLunges: splits.sandbagLunges ?? null,
+      run8: splits.run8 ?? null,
+      wallBalls: splits.wallBalls ?? null,
       
       notes: notes || null,
       createdAt: new Date().toISOString(),

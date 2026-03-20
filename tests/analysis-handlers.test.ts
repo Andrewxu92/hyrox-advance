@@ -49,6 +49,14 @@ describe('Analysis Handlers', () => {
     it('should throw on missing data', () => {
       expect(() => validateQuickAnalysisRequest({})).toThrow(ValidationError);
     });
+
+    it('should require all split keys like full analysis', () => {
+      const incomplete = { ...validSplits };
+      delete (incomplete as { sledPull?: number }).sledPull;
+      expect(() =>
+        validateQuickAnalysisRequest({ splits: incomplete, athleteInfo: { gender: 'male' } })
+      ).toThrow(ValidationError);
+    });
   });
 
   describe('runQuickAnalysis', () => {

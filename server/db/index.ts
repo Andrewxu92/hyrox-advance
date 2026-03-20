@@ -119,6 +119,7 @@ export async function initializeDatabase(): Promise<boolean> {
         run_2 INTEGER,
         sled_push INTEGER,
         run_3 INTEGER,
+        sled_pull INTEGER,
         burpee_broad_jump INTEGER,
         run_4 INTEGER,
         rowing INTEGER,
@@ -203,6 +204,11 @@ export async function initializeDatabase(): Promise<boolean> {
     } catch (_) { /* column may already exist */ }
     try {
       database.run(sql`ALTER TABLE analysis_reports ADD COLUMN muscle_fatigue_analysis TEXT`);
+    } catch (_) { /* column may already exist */ }
+
+    // 与 Drizzle schema 对齐：旧库缺少 Station 3 (Sled Pull)
+    try {
+      database.run(sql`ALTER TABLE results ADD COLUMN sled_pull INTEGER`);
     } catch (_) { /* column may already exist */ }
     
     // 创建索引（优化查询性能）

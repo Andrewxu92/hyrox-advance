@@ -91,6 +91,7 @@ async function initDatabase() {
         run_2 INTEGER,
         sled_push INTEGER,
         run_3 INTEGER,
+        sled_pull INTEGER,
         burpee_broad_jump INTEGER,
         run_4 INTEGER,
         rowing INTEGER,
@@ -164,6 +165,13 @@ async function initDatabase() {
       )
     `);
     console.log('✅ Table created: training_logs');
+
+    try {
+      db.run(`ALTER TABLE results ADD COLUMN sled_pull INTEGER`);
+      console.log('✅ Migration: results.sled_pull');
+    } catch {
+      /* column may already exist */
+    }
 
     // Create indexes for performance
     const indexes = [
