@@ -109,9 +109,9 @@ function MyResults() {
   const calculateTotalTime = (result: any): number => {
     const splits = result.splits || {};
     let total = 0;
-    const keys = ['run1', 'skiErg', 'run2', 'sledPush', 'run3', 'burpeeBroadJump', 
-                  'run4', 'rowing', 'run5', 'farmersCarry', 'run6', 'sandbagLunges',
-                  'run7', 'wallBalls', 'run8'];
+    const keys = ['run1', 'skiErg', 'run2', 'sledPush', 'run3', 'sledPull',
+                  'run4', 'burpeeBroadJump', 'run5', 'rowing', 'run6', 'farmersCarry',
+                  'run7', 'sandbagLunges', 'run8', 'wallBalls'];
     keys.forEach(key => {
       if (splits[key]) total += splits[key];
     });
@@ -170,7 +170,7 @@ function MyResults() {
       runs = [1,2,3,4,5,6,7,8].map(i => splits[`run${i}`] || 0);
     }
     
-    const stations = ['skiErg', 'sledPush', 'burpeeBroadJump', 'rowing', 'farmersCarry', 'sandbagLunges', 'wallBalls'];
+    const stations = ['skiErg', 'sledPush', 'sledPull', 'burpeeBroadJump', 'rowing', 'farmersCarry', 'sandbagLunges', 'wallBalls'];
     const avgRun = runs.reduce((a, b) => a + b, 0) / runs.length;
     
     const runDeclines = runs.map((time, idx) => ({
@@ -197,6 +197,7 @@ function MyResults() {
     const names: Record<string, string> = {
       skiErg: 'SkiErg',
       sledPush: 'Sled Push',
+      sledPull: 'Sled Pull',
       burpeeBroadJump: 'Burpee 跳',
       rowing: '划船',
       farmersCarry: '农夫走',

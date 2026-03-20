@@ -237,7 +237,7 @@ export async function getStationPerformanceComparison(athleteId: string, resultI
   }
 
   const stations = [
-    'skiErg', 'sledPush', 'burpeeBroadJump', 'rowing',
+    'skiErg', 'sledPush', 'sledPull', 'burpeeBroadJump', 'rowing',
     'farmersCarry', 'sandbagLunges', 'wallBalls'
   ];
 

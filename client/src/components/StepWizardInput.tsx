@@ -31,6 +31,7 @@ interface StepWizardInputProps {
 const stations = [
   { key: 'skiErg', label: 'SkiErg', icon: '⛷️' },
   { key: 'sledPush', label: 'Sled Push', icon: '🛷' },
+  { key: 'sledPull', label: 'Sled Pull', icon: '⛓️' },
   { key: 'burpeeBroadJump', label: 'Burpee跳', icon: '🦘' },
   { key: 'rowing', label: '划船', icon: '🚣' },
   { key: 'farmersCarry', label: '农夫走', icon: '🪣' },
@@ -56,8 +57,8 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
   const [splits, setSplits] = useState<Splits>({
     run1: 0, run2: 0, run3: 0, run4: 0,
     run5: 0, run6: 0, run7: 0, run8: 0,
-    skiErg: 0, sledPush: 0, burpeeBroadJump: 0, rowing: 0,
-    farmersCarry: 0, sandbagLunges: 0, wallBalls: 0
+    skiErg: 0, sledPush: 0, sledPull: 0, burpeeBroadJump: 0,
+    rowing: 0, farmersCarry: 0, sandbagLunges: 0, wallBalls: 0
   });
 
   const { isLoading: isAnalyzing, error: apiError, execute, clearError } = useApiHandler();
@@ -98,8 +99,8 @@ function StepWizardInput({ onAnalysis }: StepWizardInputProps) {
       setSplits({
         run1: 0, run2: 0, run3: 0, run4: 0,
         run5: 0, run6: 0, run7: 0, run8: 0,
-        skiErg: 0, sledPush: 0, burpeeBroadJump: 0, rowing: 0,
-        farmersCarry: 0, sandbagLunges: 0, wallBalls: 0
+        skiErg: 0, sledPush: 0, sledPull: 0, burpeeBroadJump: 0,
+        rowing: 0, farmersCarry: 0, sandbagLunges: 0, wallBalls: 0
       });
       setCurrentStep(0);
     }

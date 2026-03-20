@@ -16,9 +16,9 @@ import {
 } from './hyrox-data.js';
 
 const SPLIT_ORDER = [
-  'run1', 'skiErg', 'run2', 'sledPush', 'run3', 'burpeeBroadJump',
-  'run4', 'rowing', 'run5', 'farmersCarry', 'run6', 'sandbagLunges',
-  'run7', 'wallBalls', 'run8',
+  'run1', 'skiErg', 'run2', 'sledPush', 'run3', 'sledPull',        // 新增 sledPull
+  'run4', 'burpeeBroadJump', 'run5', 'rowing', 'run6', 'farmersCarry',
+  'run7', 'sandbagLunges', 'run8', 'wallBalls',
 ] as const;
 
 export type Gender = 'male' | 'female';

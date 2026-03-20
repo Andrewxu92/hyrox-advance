@@ -3,9 +3,9 @@ import { calculateTargetSplits, estimateFromSplits } from '../server/lib/pace-ca
 
 describe('Pace Calculator', () => {
   describe('calculateTargetSplits', () => {
-    it('should return 15 segments for target time (8 runs + 7 stations)', () => {
+    it('should return 16 segments for target time (8 runs + 8 stations)', () => {
       const r = calculateTargetSplits(65 * 60, 'male');
-      expect(r.splits).toHaveLength(15);
+      expect(r.splits).toHaveLength(16);
       expect(r.targetTotalSeconds).toBe(65 * 60);
       expect(r.gender).toBe('male');
       expect(r.level).toBeDefined();
@@ -30,7 +30,7 @@ describe('Pace Calculator', () => {
       const runs = r.splits.filter((s) => s.type === 'run');
       const stations = r.splits.filter((s) => s.type === 'station');
       expect(runs).toHaveLength(8);
-      expect(stations).toHaveLength(7);
+      expect(stations).toHaveLength(8);
       expect(r.splits[0].key).toBe('run1');
       expect(r.splits[1].key).toBe('skiErg');
     });
@@ -43,7 +43,7 @@ describe('Pace Calculator', () => {
         gender: 'male',
       });
       expect(e.estimatedTotalSeconds).toBe(270 + 275 + 240);
-      expect(e.missingKeys.length).toBe(12);
+      expect(e.missingKeys.length).toBe(13); // 16 total - 3 entered = 13 missing (原来是12，现在8站+8跑=16)
       expect(e.isComplete).toBe(false);
     });
 
@@ -54,7 +54,7 @@ describe('Pace Calculator', () => {
       ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'].forEach((k, i) => {
         full[k] = runAvg + i * 5;
       });
-      ['skiErg', 'sledPush', 'burpeeBroadJump', 'rowing', 'farmersCarry', 'sandbagLunges', 'wallBalls'].forEach((k) => {
+      ['skiErg', 'sledPush', 'sledPull', 'burpeeBroadJump', 'rowing', 'farmersCarry', 'sandbagLunges', 'wallBalls'].forEach((k) => {
         full[k] = stationAvg;
       });
       const e = estimateFromSplits({ splits: full, gender: 'male' });

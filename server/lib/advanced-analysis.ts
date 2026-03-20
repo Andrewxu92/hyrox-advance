@@ -17,9 +17,9 @@ import type { AnalysisReport } from '../../shared/schema.js';
  */
 export function analyzeEnergySystem(splits: {
   run1: number; skiErg: number; run2: number; sledPush: number;
-  run3: number; burpeeBroadJump: number; run4: number; rowing: number;
-  run5: number; farmersCarry: number; run6: number; sandbagLunges: number;
-  run7: number; wallBalls: number; run8: number;
+  run3: number; sledPull: number; run4: number; burpeeBroadJump: number;  // 新增 sledPull
+  run5: number; rowing: number; run6: number; farmersCarry: number;       // 修正 run 顺序
+  run7: number; sandbagLunges: number; run8: number; wallBalls: number;   // 修正 wallBalls 位置
 }): {
   atpCpContribution: number;
   glycolyticContribution: number;
@@ -31,13 +31,13 @@ export function analyzeEnergySystem(splits: {
   const runningTime = splits.run1 + splits.run2 + splits.run3 + splits.run4 + 
                       splits.run5 + splits.run6 + splits.run7 + splits.run8;
   
-  const stationTime = splits.skiErg + splits.sledPush + splits.burpeeBroadJump + 
+  const stationTime = splits.skiErg + splits.sledPush + splits.sledPull + splits.burpeeBroadJump + 
                       splits.rowing + splits.farmersCarry + splits.sandbagLunges + splits.wallBalls;
   
   const totalTime = runningTime + stationTime;
   
   // 爆发力动作 (ATP-CP 主导): Sled Push, Sled Pull, Wall Balls, Burpee Broad Jump
-  const explosiveStationTime = splits.sledPush + splits.wallBalls + splits.burpeeBroadJump;
+  const explosiveStationTime = splits.sledPush + splits.sledPull + splits.wallBalls + splits.burpeeBroadJump;
   
   // 高强度间歇动作 (糖酵解主导): SkiErg, Rowing, Farmers Carry, Sandbag Lunges
   const glycolyticStationTime = splits.skiErg + splits.rowing + splits.farmersCarry + splits.sandbagLunges;

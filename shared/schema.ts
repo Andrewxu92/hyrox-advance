@@ -20,38 +20,40 @@ export interface HyroxResult {
   overallRank?: number;
   ageGroupRank?: number;
   
-  // 分段成绩（8轮跑步 + 8个station）
+  // 分段成绩（8轮跑步 + 8个station）- 修正为官方HYROX标准顺序
   splits: {
     // Run 1
     run1: number;
-    // Station 1: SkiErg
+    // Station 1: SkiErg (1000m)
     skiErg: number;
     // Run 2
     run2: number;
-    // Station 2: Sled Push
+    // Station 2: Sled Push (50m)
     sledPush: number;
     // Run 3
     run3: number;
-    // Station 3: Burpee Broad Jump
-    burpeeBroadJump: number;
+    // Station 3: Sled Pull (50m) - 新增：之前缺失
+    sledPull: number;
     // Run 4
     run4: number;
-    // Station 4: Rowing
-    rowing: number;
+    // Station 4: Burpee Broad Jump (80m)
+    burpeeBroadJump: number;
     // Run 5
     run5: number;
-    // Station 5: Farmer's Carry
-    farmersCarry: number;
+    // Station 5: Rowing (1000m)
+    rowing: number;
     // Run 6
     run6: number;
-    // Station 6: Sandbag Lunges
-    sandbagLunges: number;
+    // Station 6: Farmer's Carry (200m)
+    farmersCarry: number;
     // Run 7
     run7: number;
-    // Station 7: Wall Balls
-    wallBalls: number;
+    // Station 7: Sandbag Lunges (100m)
+    sandbagLunges: number;
     // Run 8
     run8: number;
+    // Station 8: Wall Balls (100 reps)
+    wallBalls: number;
   };
   
   // 元数据

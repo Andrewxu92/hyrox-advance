@@ -3,16 +3,17 @@ import { motion } from 'framer-motion';
 import { Timer, Target, Calculator, Loader2 } from 'lucide-react';
 
 const SPLIT_ORDER = [
-  'run1', 'skiErg', 'run2', 'sledPush', 'run3', 'burpeeBroadJump',
-  'run4', 'rowing', 'run5', 'farmersCarry', 'run6', 'sandbagLunges',
-  'run7', 'wallBalls', 'run8',
+  'run1', 'skiErg', 'run2', 'sledPush', 'run3', 'sledPull',
+  'run4', 'burpeeBroadJump', 'run5', 'rowing', 'run6', 'farmersCarry',
+  'run7', 'sandbagLunges', 'run8', 'wallBalls',
 ] as const;
 
 const STATION_LABELS: Record<string, string> = {
   run1: '跑步 1', run2: '跑步 2', run3: '跑步 3', run4: '跑步 4',
   run5: '跑步 5', run6: '跑步 6', run7: '跑步 7', run8: '跑步 8',
-  skiErg: 'SkiErg', sledPush: 'Sled Push', burpeeBroadJump: 'Burpee Broad Jump',
-  rowing: 'Rowing', farmersCarry: "Farmer's Carry", sandbagLunges: 'Sandbag Lunges',
+  skiErg: 'SkiErg', sledPush: 'Sled Push', sledPull: 'Sled Pull',
+  burpeeBroadJump: 'Burpee Broad Jump', rowing: 'Rowing',
+  farmersCarry: "Farmer's Carry", sandbagLunges: 'Sandbag Lunges',
   wallBalls: 'Wall Balls',
 };
 

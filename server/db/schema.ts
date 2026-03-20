@@ -46,22 +46,23 @@ export const results = sqliteTable('results', {
   ageGroupRank: integer('age_group_rank'),
   genderRank: integer('gender_rank'),
   
-  // 分段成绩（8 轮跑步 + 8 个 station）
+  // 分段成绩（8 轮跑步 + 8 个 station）- 修正为官方HYROX标准顺序
   run1: integer('run_1'),
-  skiErg: integer('ski_erg'),
+  skiErg: integer('ski_erg'),              // Station 1: 1000m SkiErg
   run2: integer('run_2'),
-  sledPush: integer('sled_push'),
+  sledPush: integer('sled_push'),          // Station 2: 50m Sled Push
   run3: integer('run_3'),
-  burpeeBroadJump: integer('burpee_broad_jump'),
+  sledPull: integer('sled_pull'),          // Station 3: 50m Sled Pull (新增)
   run4: integer('run_4'),
-  rowing: integer('rowing'),
+  burpeeBroadJump: integer('burpee_broad_jump'), // Station 4: 80m Burpee Broad Jump
   run5: integer('run_5'),
-  farmersCarry: integer('farmers_carry'),
+  rowing: integer('rowing'),               // Station 5: 1000m Rowing
   run6: integer('run_6'),
-  sandbagLunges: integer('sandbag_lunges'),
+  farmersCarry: integer('farmers_carry'),  // Station 6: 200m Farmer's Carry
   run7: integer('run_7'),
-  wallBalls: integer('wall_balls'),
+  sandbagLunges: integer('sandbag_lunges'), // Station 7: 100m Sandbag Lunges
   run8: integer('run_8'),
+  wallBalls: integer('wall_balls'),        // Station 8: 100 reps Wall Balls
   
   // 元数据
   notes: text('notes'),

@@ -8,9 +8,9 @@ import {
 describe('Advanced Analysis', () => {
   const mockSplits = {
     run1: 270, skiErg: 240, run2: 275, sledPush: 210,
-    run3: 280, burpeeBroadJump: 180, run4: 285, rowing: 300,
-    run5: 290, farmersCarry: 220, run6: 295, sandbagLunges: 240,
-    run7: 300, wallBalls: 200, run8: 305
+    run3: 280, sledPull: 220, run4: 285, burpeeBroadJump: 180,
+    run5: 290, rowing: 300, run6: 295, farmersCarry: 220,
+    run7: 300, sandbagLunges: 240, run8: 305, wallBalls: 200
   };
 
   describe('analyzeEnergySystem', () => {

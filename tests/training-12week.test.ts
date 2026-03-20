@@ -14,6 +14,7 @@ const DANIELS_ZONES = {
 const STATION_DISPLAY_NAMES: Record<string, string> = {
   skiErg: 'SkiErg',
   sledPush: 'Sled Push',
+  sledPull: 'Sled Pull',           // 新增
   burpeeBroadJump: 'Burpee Broad Jump',
   rowing: 'Rowing',
   farmersCarry: "Farmer's Carry",

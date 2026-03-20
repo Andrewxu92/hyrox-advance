@@ -12,20 +12,22 @@ export interface LevelBenchmarks {
   stations: Record<string, { min: number; max: number }>;
 }
 
-// Station names in order
+// Station names in order - 修正为官方HYROX标准顺序 (8个站)
 export const STATION_NAMES = [
-  'skiErg',
-  'sledPush',
-  'burpeeBroadJump',
-  'rowing',
-  'farmersCarry',
-  'sandbagLunges',
-  'wallBalls'
+  'skiErg',           // Station 1: 1000m SkiErg
+  'sledPush',         // Station 2: 50m Sled Push
+  'sledPull',         // Station 3: 50m Sled Pull (新增)
+  'burpeeBroadJump',  // Station 4: 80m Burpee Broad Jump
+  'rowing',           // Station 5: 1000m Rowing
+  'farmersCarry',     // Station 6: 200m Farmer's Carry
+  'sandbagLunges',    // Station 7: 100m Sandbag Lunges
+  'wallBalls'         // Station 8: 100 reps Wall Balls
 ] as const;
 
 export const STATION_DISPLAY_NAMES: Record<string, string> = {
   skiErg: 'SkiErg',
   sledPush: 'Sled Push',
+  sledPull: 'Sled Pull',           // 新增
   burpeeBroadJump: 'Burpee Broad Jump',
   rowing: 'Rowing',
   farmersCarry: "Farmer's Carry",
@@ -36,13 +38,14 @@ export const STATION_DISPLAY_NAMES: Record<string, string> = {
 // Run names
 export const RUN_NAMES = ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7', 'run8'] as const;
 
-// Benchmark data for men (times in seconds)
+// Benchmark data for men (times in seconds) - 修正为8个站
 export const MALE_BENCHMARKS: Record<string, LevelBenchmarks> = {
   elite: {
     totalTime: { min: 55 * 60, max: 60 * 60 },
     stations: {
       skiErg: { min: 3 * 60, max: 3 * 60 + 30 },
       sledPush: { min: 2 * 60 + 30, max: 3 * 60 },
+      sledPull: { min: 2 * 60 + 30, max: 3 * 60 },        // 新增
       burpeeBroadJump: { min: 2 * 60 + 30, max: 3 * 60 },
       rowing: { min: 3 * 60, max: 3 * 60 + 30 },
       farmersCarry: { min: 2 * 60 + 30, max: 3 * 60 },
@@ -55,6 +58,7 @@ export const MALE_BENCHMARKS: Record<string, LevelBenchmarks> = {
     stations: {
       skiErg: { min: 4 * 60, max: 5 * 60 },
       sledPush: { min: 3 * 60, max: 4 * 60 },
+      sledPull: { min: 3 * 60, max: 4 * 60 },             // 新增
       burpeeBroadJump: { min: 3 * 60, max: 4 * 60 },
       rowing: { min: 4 * 60, max: 5 * 60 },
       farmersCarry: { min: 3 * 60, max: 4 * 60 },
@@ -67,6 +71,7 @@ export const MALE_BENCHMARKS: Record<string, LevelBenchmarks> = {
     stations: {
       skiErg: { min: 5 * 60, max: 6 * 60 },
       sledPush: { min: 4 * 60, max: 5 * 60 + 30 },
+      sledPull: { min: 4 * 60, max: 5 * 60 + 30 },        // 新增
       burpeeBroadJump: { min: 4 * 60, max: 5 * 60 + 30 },
       rowing: { min: 5 * 60, max: 6 * 60 },
       farmersCarry: { min: 4 * 60, max: 5 * 60 + 30 },
@@ -76,13 +81,14 @@ export const MALE_BENCHMARKS: Record<string, LevelBenchmarks> = {
   }
 };
 
-// Benchmark data for women (slightly adjusted for physiological differences)
+// Benchmark data for women (slightly adjusted for physiological differences) - 修正为8个站
 export const FEMALE_BENCHMARKS: Record<string, LevelBenchmarks> = {
   elite: {
     totalTime: { min: 60 * 60, max: 65 * 60 },
     stations: {
       skiErg: { min: 3 * 60 + 15, max: 3 * 60 + 45 },
       sledPush: { min: 2 * 60 + 45, max: 3 * 60 + 15 },
+      sledPull: { min: 2 * 60 + 45, max: 3 * 60 + 15 },     // 新增
       burpeeBroadJump: { min: 2 * 60 + 45, max: 3 * 60 + 15 },
       rowing: { min: 3 * 60 + 15, max: 3 * 60 + 45 },
       farmersCarry: { min: 2 * 60 + 45, max: 3 * 60 + 15 },
@@ -95,6 +101,7 @@ export const FEMALE_BENCHMARKS: Record<string, LevelBenchmarks> = {
     stations: {
       skiErg: { min: 4 * 60 + 30, max: 5 * 60 + 30 },
       sledPush: { min: 3 * 60 + 30, max: 4 * 60 + 30 },
+      sledPull: { min: 3 * 60 + 30, max: 4 * 60 + 30 },     // 新增
       burpeeBroadJump: { min: 3 * 60 + 30, max: 4 * 60 + 30 },
       rowing: { min: 4 * 60 + 30, max: 5 * 60 + 30 },
       farmersCarry: { min: 3 * 60 + 30, max: 4 * 60 + 30 },
@@ -107,6 +114,7 @@ export const FEMALE_BENCHMARKS: Record<string, LevelBenchmarks> = {
     stations: {
       skiErg: { min: 6 * 60, max: 7 * 60 },
       sledPush: { min: 5 * 60, max: 6 * 60 + 30 },
+      sledPull: { min: 5 * 60, max: 6 * 60 + 30 },          // 新增
       burpeeBroadJump: { min: 5 * 60, max: 6 * 60 + 30 },
       rowing: { min: 6 * 60, max: 7 * 60 },
       farmersCarry: { min: 5 * 60, max: 6 * 60 + 30 },

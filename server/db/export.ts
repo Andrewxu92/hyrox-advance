@@ -169,9 +169,9 @@ export async function exportToCSV(options: {
     const headers = [
       'id', 'athleteId', 'raceName', 'raceDate', 'raceLocation', 'division',
       'totalTime', 'overallRank', 'ageGroupRank', 'genderRank',
-      'run1', 'skiErg', 'run2', 'sledPush', 'run3', 'burpeeBroadJump',
-      'run4', 'rowing', 'run5', 'farmersCarry', 'run6', 'sandbagLunges',
-      'run7', 'wallBalls', 'run8', 'notes', 'createdAt', 'updatedAt'
+      'run1', 'skiErg', 'run2', 'sledPush', 'run3', 'sledPull',
+      'run4', 'burpeeBroadJump', 'run5', 'rowing', 'run6', 'farmersCarry',
+      'run7', 'sandbagLunges', 'run8', 'wallBalls', 'notes', 'createdAt', 'updatedAt'
     ];
     
     const csv = toCSV(rows, headers);

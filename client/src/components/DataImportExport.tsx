@@ -83,7 +83,7 @@ function validateData(data: any): ValidationResult {
   }
   if (data.splits) {
     const runFields = Array.from({ length: 8 }, (_, i) => `run${i + 1}`);
-    const stationFields = ['skiErg', 'sledPush', 'burpeeBroadJump', 'rowing', 'farmersCarry', 'sandbagLunges', 'wallBalls'];
+    const stationFields = ['skiErg', 'sledPush', 'sledPull', 'burpeeBroadJump', 'rowing', 'farmersCarry', 'sandbagLunges', 'wallBalls'];
     const allFields = [...runFields, ...stationFields];
     for (const field of allFields) {
       if (!(field in data.splits)) {

@@ -7,8 +7,9 @@ const RUN_LABELS: Record<string, string> = {
   run5: '跑步 5', run6: '跑步 6', run7: '跑步 7', run8: '跑步 8',
 };
 const STATION_LABELS: Record<string, string> = {
-  skiErg: 'SkiErg', sledPush: 'Sled Push', burpeeBroadJump: 'Burpee 跳',
-  rowing: '划船', farmersCarry: '农夫走', sandbagLunges: '沙袋箭步', wallBalls: '药球',
+  skiErg: 'SkiErg', sledPush: 'Sled Push', sledPull: 'Sled Pull',
+  burpeeBroadJump: 'Burpee 跳', rowing: '划船', farmersCarry: '农夫走',
+  sandbagLunges: '沙袋箭步', wallBalls: '药球',
 };
 
 export interface CompareResultItem {

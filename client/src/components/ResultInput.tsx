@@ -30,6 +30,7 @@ interface ResultInputProps {
 const stations = [
   { key: 'skiErg', label: 'SkiErg', icon: '⛷️', difficulty: '有氧' },
   { key: 'sledPush', label: 'Sled Push', icon: '🛷', difficulty: '力量' },
+  { key: 'sledPull', label: 'Sled Pull', icon: '🏋️', difficulty: '力量' },  // 新增
   { key: 'burpeeBroadJump', label: 'Burpee跳', icon: '🦘', difficulty: '爆发' },
   { key: 'rowing', label: '划船', icon: '🚣', difficulty: '有氧' },
   { key: 'farmersCarry', label: '农夫走', icon: '🪣', difficulty: '力量' },
