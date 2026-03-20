@@ -2,7 +2,7 @@
 // 比赛成绩管理
 
 import { Router } from 'express';
-import { eq, desc, asc, and, gte, lte, sql } from 'drizzle-orm';
+import { eq, desc, asc, and, gte, lte, sql, ne } from 'drizzle-orm';
 import { getDatabase } from '../db/index.js';
 import { results, athletes, analysisReports, type NewResult } from '../db/schema.js';
 import {
@@ -79,7 +79,7 @@ router.get('/:id', async (req, res) => {
       .from(results)
       .where(and(
         eq(results.athleteId, athleteId),
-        lte(results.id, req.params.id)
+        ne(results.id, req.params.id)
       ))
       .orderBy(desc(results.raceDate))
       .limit(5);

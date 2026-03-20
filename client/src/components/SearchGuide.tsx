@@ -5,6 +5,8 @@ interface SearchGuideProps {
   onSearch: (name: string) => void;
   onUrlSubmit?: (url: string) => void;
   loading: boolean;
+  /** 外层容器 class，便于嵌入深色页面 */
+  className?: string;
 }
 
 const POPULAR_NAMES = [
@@ -19,7 +21,7 @@ const SEARCH_TIPS = [
   { icon: '👤', title: '姓或名', desc: '单独搜索"Xu"或"Liang"' },
 ];
 
-function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
+function SearchGuide({ onSearch, onUrlSubmit, loading, className = '' }: SearchGuideProps) {
   const [searchName, setSearchName] = useState('');
   const [resultUrl, setResultUrl] = useState('');
   const [error, setError] = useState('');
@@ -79,7 +81,7 @@ function SearchGuide({ onSearch, onUrlSubmit, loading }: SearchGuideProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${className}`}>
       {/* Tab切换 */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="flex border-b">

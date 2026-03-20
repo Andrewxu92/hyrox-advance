@@ -6,6 +6,7 @@ import { FadeIn, AnimatedCard } from './ui/Animations';
 import { useFormAutoSave } from '../hooks/useLocalStorage';
 import { useApiHandler, withRetry } from '../hooks/useApiHandler';
 import TimeSelector from './ui/TimeSelector';
+import SearchGuide from './SearchGuide';
 
 interface AthleteInfo {
   name: string;
@@ -164,15 +165,17 @@ function ResultInput({ onAnalysis, forceMode }: ResultInputProps) {
     }
   }, [clearSavedData]);
 
-  const handleSearch = useCallback(async () => {
-    if (!searchQuery.trim()) return;
+  const handleSearch = useCallback(async (nameOverride?: string) => {
+    const q = (nameOverride ?? searchQuery).trim();
+    if (!q) return;
+    if (nameOverride !== undefined) setSearchQuery(q);
     setSearching(true);
     setSearchResults([]);
     clearError();
 
     try {
       const API_URL = import.meta.env.VITE_API_URL || '';
-      const response = await fetch(`${API_URL}/api/scrape/search?q=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(`${API_URL}/api/scrape/search?q=${encodeURIComponent(q)}`);
       
       if (!response.ok) throw new Error('搜索失败');
 
@@ -221,6 +224,39 @@ function ResultInput({ onAnalysis, forceMode }: ResultInputProps) {
             result: data.data
           });
           
+          onAnalysis(data.data);
+        } else {
+          throw new Error(data.error || '抓取失败');
+        }
+      });
+    } finally {
+      setShowLoadingOverlay(false);
+    }
+  }, [execute, onAnalysis, saveToHistory]);
+
+  const handleScrapeUrl = useCallback(async (url: string) => {
+    setLoadingMessage('正在获取成绩数据...');
+    setLoadingSubMessage('从比赛链接抓取记录');
+    setShowLoadingOverlay(true);
+    try {
+      await execute(async () => {
+        const API_URL = import.meta.env.VITE_API_URL || '';
+        const response = await fetch(`${API_URL}/api/scrape/url`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        if (!response.ok) throw new Error('抓取失败');
+        const data = await response.json();
+        if (data.success && data.data) {
+          saveToHistory({
+            type: 'scrape',
+            athleteInfo: {
+              name: data.data.athleteName,
+              gender: data.data.gender,
+            },
+            result: data.data,
+          });
           onAnalysis(data.data);
         } else {
           throw new Error(data.error || '抓取失败');
@@ -630,34 +666,15 @@ function ResultInput({ onAnalysis, forceMode }: ResultInputProps) {
         </AnimatedCard>
       )}
 
-      {/* 官网抓取模式 */}
+      {/* 官网抓取模式（含 SearchGuide：姓名搜索 + 粘贴链接） */}
       {mode === 'scrape' && (
         <AnimatedCard delay={0.1}>
           <div className="sport-card p-6">
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                输入你的姓名
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="姓名或拼音"
-                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:border-hyrox-red text-white"
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  aria-label="搜索选手姓名"
-                />
-                <button
-                  onClick={handleSearch}
-                  disabled={searching || !searchQuery.trim()}
-                  className="btn-primary px-4 py-3 rounded-xl font-medium disabled:opacity-50"
-                  aria-label="搜索选手"
-                >
-                  {searching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
+            <SearchGuide
+              onSearch={(name) => void handleSearch(name)}
+              onUrlSubmit={(url) => void handleScrapeUrl(url)}
+              loading={searching || isAnalyzing}
+            />
 
             {/* 搜索结果 */}
             <AnimatePresence>

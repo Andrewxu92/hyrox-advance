@@ -73,7 +73,7 @@ export function analyzeEnergySystem(splits: HyroxSplits): {
     runningTime,
     stationTime,
     explosiveStationTime,
-    glycolyticStationTime
+    glycolyticStationTime,
   });
   
   return {
@@ -85,8 +85,19 @@ export function analyzeEnergySystem(splits: HyroxSplits): {
   };
 }
 
-function generateEnergySystemAnalysis(data: any): string {
-  const { atpCpContribution, glycolyticContribution, aerobicContribution, dominantSystem, runningTime, stationTime } = data;
+interface EnergySystemNarrativeInput {
+  atpCpContribution: number;
+  glycolyticContribution: number;
+  aerobicContribution: number;
+  dominantSystem: 'ATP-CP' | 'Glycolytic' | 'Aerobic';
+  runningTime: number;
+  stationTime: number;
+  explosiveStationTime: number;
+  glycolyticStationTime: number;
+}
+
+function generateEnergySystemAnalysis(data: EnergySystemNarrativeInput): string {
+  const { atpCpContribution, glycolyticContribution, aerobicContribution, dominantSystem } = data;
   
   let analysis = `能量系统分析显示，你的 HYROX 表现主要由${getDominantSystemName(dominantSystem)}主导。\n\n`;
   
@@ -150,8 +161,8 @@ export function analyzeMuscleFatigue(splits: HyroxSplits): {
   const pushAvg = pushTime / 2;
   const upperBodyPush = Math.max(0, Math.min(100, Math.round(100 - (pushAvg - avgRunTime) / avgRunTime * 50)));
   
-  // 上肢拉力：SkiErg + Rowing + Sled Pull (用 Farmers Carry 近似)
-  const pullTime = splits.skiErg + splits.rowing;
+  // 上肢拉力：SkiErg + Rowing + Sled Pull
+  const pullTime = splits.skiErg + splits.rowing + splits.sledPull;
   const pullAvg = pullTime / 2;
   const upperBodyPull = Math.max(0, Math.min(100, Math.round(100 - (pullAvg - avgRunTime) / avgRunTime * 50)));
   
@@ -206,7 +217,17 @@ export function analyzeMuscleFatigue(splits: HyroxSplits): {
   };
 }
 
-function generateMuscleFatigueAnalysis(data: any): string {
+interface MuscleFatigueNarrativeInput {
+  upperBodyPush: number;
+  upperBodyPull: number;
+  lowerBodyQuad: number;
+  lowerBodyPosterior: number;
+  coreStability: number;
+  weakestGroup: string;
+  strongestGroup: string;
+}
+
+function generateMuscleFatigueAnalysis(data: MuscleFatigueNarrativeInput): string {
   const { upperBodyPush, upperBodyPull, lowerBodyQuad, lowerBodyPosterior, coreStability, weakestGroup, strongestGroup } = data;
   
   let analysis = `肌肉群疲劳分析揭示了你的体能特征：\n\n`;

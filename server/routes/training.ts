@@ -87,6 +87,10 @@ const WEAKNESS_FOCUS: Record<string, { exercises: string[]; focus: string }> = {
     exercises: ['Sled Push Practice', 'Leg Drive Drills', 'Heavy Squats'],
     focus: 'Lower body power and drive mechanics'
   },
+  sledPull: {
+    exercises: ['Sled Pull Technique', 'Heavy Rows', 'Hip Hinge Strength', 'Grip Endurance'],
+    focus: 'Posterior chain pulling power and leg drive'
+  },
   burpeeBroadJump: {
     exercises: ['Burpee Efficiency Drills', 'Broad Jump Practice', 'Plyometric Training'],
     focus: 'Explosive power and movement efficiency'

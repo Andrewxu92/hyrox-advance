@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchApi, getApiBaseUrl, getFetchErrorMessage } from '../lib/api';
 import { 
   User, Calendar, Trophy, TrendingUp, TrendingDown, 
   AlertCircle, Activity, Target, Plus, X, Timer, Flame, GitCompare
@@ -48,27 +49,24 @@ function MyResults() {
   const [showCompareView, setShowCompareView] = useState(false);
   const [compareLoading, setCompareLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || '';
-
   useEffect(() => {
     loadAthletes();
   }, []);
 
   const loadAthletes = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/athletes`);
-      const data = await res.json();
-
-      if (data.success) {
-        setAthletes(data.data || []);
-        if (data.data && data.data.length > 0) {
-          await selectAthlete(data.data[0]);
+      const out = await fetchApi<Athlete[]>('/api/athletes');
+      if (out.ok) {
+        const list = out.data || [];
+        setAthletes(list);
+        if (list.length > 0) {
+          await selectAthlete(list[0]);
         }
       } else {
-        setError(data.error || '加载运动员失败');
+        setError(out.error || '加载运动员失败');
       }
-    } catch (err: any) {
-      setError(`无法连接到服务器 (${err.message})`);
+    } catch (err: unknown) {
+      setError(`无法连接到服务器 (${getFetchErrorMessage(err)})`);
     }
   };
 
@@ -78,11 +76,13 @@ function MyResults() {
     setError('');
 
     try {
-      const res = await fetch(`${API_URL}/api/results?athleteId=${athlete.id}`);
-      const data = await res.json();
+      const out = await fetchApi<Array<{ result?: RaceResult } & Record<string, unknown>>>(
+        `/api/results?athleteId=${encodeURIComponent(athlete.id)}`
+      );
 
-      if (data.success) {
-        const resultsWithTotal = (data.data || []).map((item: any) => {
+      if (out.ok) {
+        const raw = out.data || [];
+        const resultsWithTotal = raw.map((item: any) => {
           const result = item.result || item;
           return {
             ...result,
@@ -98,10 +98,10 @@ function MyResults() {
           setSelectedRace(sorted[0]);
         }
       } else {
-        setError(data.error || '加载成绩失败');
+        setError(out.error || '加载成绩失败');
       }
-    } catch (err: any) {
-      setError(`加载成绩失败：${err.message}`);
+    } catch (err: unknown) {
+      setError(`加载成绩失败：${getFetchErrorMessage(err)}`);
     } finally {
       setLoading(false);
     }
@@ -139,7 +139,7 @@ function MyResults() {
     };
 
     try {
-      const res = await fetch(`${API_URL}/api/athletes`, {
+      const res = await fetch(`${getApiBaseUrl()}/api/athletes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newAthlete),
@@ -153,7 +153,7 @@ function MyResults() {
         setError(data.error || '添加运动员失败');
       }
     } catch (err) {
-      setError('添加运动员失败');
+      setError(`添加运动员失败：${getFetchErrorMessage(err)}`);
     }
   };
 
@@ -219,17 +219,19 @@ function MyResults() {
     setCompareLoading(true);
     setError('');
     try {
-      const res = await fetch(
-        `${API_URL}/api/results/athlete/${selectedAthlete.id}/compare?resultIds=${compareIds.join(',')}`
+      const out = await fetchApi<CompareData>(
+        `/api/results/athlete/${encodeURIComponent(selectedAthlete.id)}/compare?resultIds=${encodeURIComponent(compareIds.join(','))}`
       );
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || '获取对比数据失败');
-      setComparisonData(json.data);
+      if (!out.ok) {
+        setError(out.error || '获取对比数据失败');
+        return;
+      }
+      setComparisonData(out.data);
       setShowCompareView(true);
       setSelectingForCompare(false);
       setCompareIds([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '获取对比数据失败');
+      setError(getFetchErrorMessage(err));
     } finally {
       setCompareLoading(false);
     }

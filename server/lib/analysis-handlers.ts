@@ -1,7 +1,8 @@
 // Shared analysis logic for /api/analysis and /api/analysis-db
 // Validation, full AI analysis, quick analysis, benchmarks
 
-import { generateAnalysis, type AthleteInfo } from './openai.js';
+import { generateAnalysis, type AthleteInfo, type AnalysisResult } from './openai.js';
+import type { AnalysisReport } from '../../shared/schema.js';
 import {
   calculateTotalTime,
   formatTime,
@@ -39,6 +40,9 @@ export interface ValidatedAnalysisRequest {
   splits: HyroxSplits;
   athleteInfo: AthleteInfo;
 }
+
+/** AI 报告 + 进阶分析等（与 shared AnalysisReport 部分字段可对齐） */
+export type FullAnalysisResult = AnalysisResult & Partial<AnalysisReport>;
 
 /**
  * Validate analysis request body. Throws ValidationError on invalid input.
@@ -87,10 +91,10 @@ export function validateQuickAnalysisRequest(body: unknown): { splits: HyroxSpli
 export async function runFullAnalysis(
   splits: HyroxSplits,
   athleteInfo: AthleteInfo
-): Promise<Record<string, unknown>> {
+): Promise<FullAnalysisResult> {
   const analysis = await generateAnalysis(splits, athleteInfo);
   const advancedAnalysis = generateAdvancedAnalysis(splits);
-  return { ...analysis, ...advancedAnalysis };
+  return { ...analysis, ...advancedAnalysis } as FullAnalysisResult;
 }
 
 /**

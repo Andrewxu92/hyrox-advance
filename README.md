@@ -138,6 +138,17 @@ OPENAI_API_KEY=sk-your-openai-api-key-here
 # 或 DASHSCOPE_API_KEY=your-dashscope-api-key-here
 ```
 
+**前端 `client/`（可选）**  
+本地开发一般**不要**设置 `VITE_API_URL`，请求走 Vite 代理（`/api` → 后端端口）。  
+若前端与后端域名分离部署（如静态站 + 独立 API），在 `client/.env` 或构建环境中设置：
+
+```
+# 生产/跨域：填后端根 URL，勿带末尾斜杠
+# VITE_API_URL=https://api.example.com
+```
+
+详见 `client/src/lib/api.ts` 中的 `getApiBaseUrl()`。
+
 ### 3. 启动后端
 ```bash
 npm run dev

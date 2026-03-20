@@ -1,5 +1,6 @@
 // 运动员管理页面
 import { useState, useEffect } from 'react';
+import { fetchApi, getApiBaseUrl, getFetchErrorMessage } from '../lib/api';
 import { User, Plus, Edit, Trash2, Save, X, Search, Trophy } from 'lucide-react';
 import AthleteSelector from '../components/AthleteSelector';
 
@@ -32,17 +33,14 @@ export default function AthletesPage() {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_URL}/api/athletes`);
-      const data = await res.json();
-
-      if (data.success) {
-        setAthletes(data.data || []);
+      const out = await fetchApi<Athlete[]>('/api/athletes');
+      if (out.ok) {
+        setAthletes(out.data || []);
       } else {
-        setError(data.error || '加载运动员失败');
+        setError(out.error || '加载运动员失败');
       }
     } catch (err) {
-      setError('无法连接到服务器。请确保后端服务运行中。');
+      setError(`无法连接到服务器：${getFetchErrorMessage(err)}`);
       console.error('Error loading athletes:', err);
     } finally {
       setLoading(false);
@@ -59,11 +57,11 @@ export default function AthletesPage() {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || '';
+      const base = getApiBaseUrl();
       const method = athlete.id ? 'PUT' : 'POST';
       const url = athlete.id 
-        ? `${API_URL}/api/athletes/${athlete.id}`
-        : `${API_URL}/api/athletes`;
+        ? `${base}/api/athletes/${athlete.id}`
+        : `${base}/api/athletes`;
 
       const res = await fetch(url, {
         method,
@@ -95,8 +93,7 @@ export default function AthletesPage() {
     setError('');
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_URL}/api/athletes/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${getApiBaseUrl()}/api/athletes/${id}`, { method: 'DELETE' });
 
       const data = await res.json();
 
